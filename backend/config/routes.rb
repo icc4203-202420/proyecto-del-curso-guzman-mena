@@ -28,6 +28,9 @@ Rails.application.routes.draw do
       end
       
       resources :reviews, only: [:index, :show, :create, :update, :destroy]
+      # Rutas Nuevas para entrega 1
+      resources :events
+      
     end
   end
 
