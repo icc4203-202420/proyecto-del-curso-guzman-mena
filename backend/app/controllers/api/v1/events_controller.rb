@@ -1,4 +1,4 @@
-class API::V1::EventsController < ApplicationController
+class API::V1::EventsController < ApplicationController ### Entrega 1.1 ###
   include ImageProcessing
   include Authenticable
   respond_to :json

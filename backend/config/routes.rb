@@ -24,12 +24,14 @@ Rails.application.routes.draw do
       resources :bars
       resources :beers
       resources :users do
+        # get 'friendships', to: 'users#friendships', on: :member
+        # post 'friendships', to: 'users#create_friendship', on: :member
+        resources :friendships ### Entrega 1.2 ###
         resources :reviews, only: [:index]
       end
       
       resources :reviews, only: [:index, :show, :create, :update, :destroy]
-      # Rutas Nuevas para entrega 1
-      resources :events
+      resources :events ### Entrega 1.1 ###
       
     end
   end
