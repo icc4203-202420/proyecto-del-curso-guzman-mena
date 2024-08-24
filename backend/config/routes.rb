@@ -29,11 +29,8 @@ Rails.application.routes.draw do
         resources :friendships ### Entrega 1.2 ###
         resources :reviews, only: [:index]
       end
-      
       resources :reviews, only: [:index, :show, :create, :update, :destroy]
-      resources :events ### Entrega 1.1 ###
-      
+      resources :events ### Entrega 1.1 ### 
     end
   end
-
 end

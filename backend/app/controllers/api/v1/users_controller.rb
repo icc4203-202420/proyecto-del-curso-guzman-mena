@@ -6,8 +6,7 @@ class API::V1::UsersController < ApplicationController
     @users = User.includes(:reviews, :address).all   
   end
 
-  def show
-  
+  def show  
   end
 
   def create
