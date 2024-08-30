@@ -3,12 +3,21 @@ class API::V1::BarsController < ApplicationController
   include Authenticable
 
   respond_to :json
-  before_action :set_bar, only: [:show, :update, :destroy]
+  before_action :set_bar, only: [:show, :update, :destroy, :events]
   before_action :verify_jwt_token, only: [:create, :update, :destroy]
 
   def index
     @bars = Bar.all
     render json: { bars: @bars }, status: :ok
+  end
+
+  def events
+    @events = Event.where(bar_id: @bar.id)  # Filtrar eventos por bar_id
+    if @events.any?
+      render json: { events: @events }, status: :ok
+    else
+      render json: { message: 'No events found for this bar.' }, status: :ok
+    end
   end
 
   def show
@@ -43,7 +52,6 @@ class API::V1::BarsController < ApplicationController
     end
   end
 
-  # Método para eliminar un bar existente
   def destroy
     if @bar.destroy
       render json: { message: 'Bar successfully deleted.' }, status: :no_content
@@ -54,7 +62,6 @@ class API::V1::BarsController < ApplicationController
 
   private
 
-  # Use callbacks to share common setup or constraints between actions.
   def set_bar
     @bar = Bar.find_by(id: params[:id])
     render json: { error: 'Bar not found' }, status: :not_found unless @bar

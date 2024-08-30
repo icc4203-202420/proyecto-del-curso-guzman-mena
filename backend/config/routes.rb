@@ -21,7 +21,11 @@ Rails.application.routes.draw do
 
   namespace :api, defaults: { format: :json } do
     namespace :v1 do
-      resources :bars
+      resources :bars do
+        member do
+          get 'events'
+        end
+      end
       resources :beers
       resources :users do
         # get 'friendships', to: 'users#friendships', on: :member
