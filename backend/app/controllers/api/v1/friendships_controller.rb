@@ -15,7 +15,7 @@ class API::V1::FriendshipsController < ApplicationController
     @friend = User.find_by(id: friendship_params[:friend_id])
     return render json: { error: 'Friend not found' }, status: :not_found unless @friend
   
-    @friendship = @user.friendships.build(friend: @friend, bar_id: params[:bar_id])
+    @friendship = @user.friendships.build(friend: @friend, bar_id: friendship_params[:bar_id])
   
     if @friendship.save
       render json: @friendship, status: :created
