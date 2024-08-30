@@ -51,18 +51,6 @@ function App() {
           ModalProps={{ keepMounted: true }}
         >
           <List>
-            <ListItem button component={Link} to="/" onClick={toggleDrawer}>
-              <ListItemIcon><HomeIcon /></ListItemIcon>
-              <ListItemText primary="Home" />
-            </ListItem>
-            <ListItem button component={Link} to="/beers" onClick={toggleDrawer}>
-              <ListItemIcon><SearchIcon /></ListItemIcon>
-              <ListItemText primary="Beers" />
-            </ListItem>
-            <ListItem button component={Link} to="/bars" onClick={toggleDrawer}>
-              <ListItemIcon><SearchIcon /></ListItemIcon>
-              <ListItemText primary="Bars" />
-            </ListItem>
             <ListItem button component={Link} to="/search-user" onClick={toggleDrawer}>
               <ListItemIcon><SearchIcon /></ListItemIcon>
               <ListItemText primary="Search User" />

@@ -75,7 +75,7 @@ const Bars = () => {
                 <Button
                   variant="contained"
                   color="primary"
-                  onClick={() => handleBarClick(bar.id)}
+                  onClick={() => handleBarClick(bar.id)} // Función de clic
                   sx={{ mt: 2 }}
                 >
                   Ver Eventos

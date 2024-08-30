@@ -3,21 +3,12 @@ class API::V1::BarsController < ApplicationController
   include Authenticable
 
   respond_to :json
-  before_action :set_bar, only: [:show, :update, :destroy, :events]
+  before_action :set_bar, only: [:show, :update, :destroy]
   before_action :verify_jwt_token, only: [:create, :update, :destroy]
 
   def index
     @bars = Bar.all
     render json: { bars: @bars }, status: :ok
-  end
-
-  def events
-    @events = Event.where(bar_id: @bar.id)  # Filtrar eventos por bar_id
-    if @events.any?
-      render json: { events: @events }, status: :ok
-    else
-      render json: { message: 'No events found for this bar.' }, status: :ok
-    end
   end
 
   def show

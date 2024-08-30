@@ -5,11 +5,25 @@ class API::V1::EventsController < ApplicationController ### Entrega 1.1 ###
   before_action :set_event, only: [:show, :update, :destroy]
   before_action :verify_jwt_token, only: [:create, :update, :destroy]
 
-  # GET /events
+  # GET /bar/:id/events
+
   def index
-    @events = Event.all
-    render json: { events: @events }, status: :ok
+    @bar = Bar.find_by(id: params[:bar_id])
+  
+    if @bar.nil?
+      render json: { error: "Bar not found" }, status: :not_found
+      return
+    end
+  
+    @events = @bar.events
+  
+    if @events.empty?
+      render json: { message: "No events found for this bar" }, status: :ok
+    else
+      render json: @events
+    end
   end
+  
 
   # GET /events/:id
   def show

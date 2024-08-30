@@ -71,7 +71,7 @@ const Home = () => {
 
         {/* Box para Eventos Activos */}
         <Grid item xs={12} sm={6} md={4}>
-          <Link to="/bars" style={{ textDecoration: 'none' }}>
+          {/* <Link to="/bars" style={{ textDecoration: 'none' }}> */}
             <Paper
               elevation={1}
               sx={{
@@ -92,7 +92,7 @@ const Home = () => {
             >
               <Typography variant="h6">Eventos Activos</Typography>
             </Paper>
-          </Link>
+          {/* </Link> */}
         </Grid>
       </Grid>
     </Box>
