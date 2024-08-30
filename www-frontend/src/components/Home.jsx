@@ -11,7 +11,6 @@ const Home = () => {
         p: 3,
         display: 'flex',
         justifyContent: 'center',
-        justifyContent: 'center',
         alignItems: 'center',
         bgcolor: 'background.default',
       }}
