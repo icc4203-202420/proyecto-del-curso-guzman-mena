@@ -60,3 +60,7 @@ secrets.yml
 /config/credentials/production.key
 
 /config/credentials/developmentls.key
+
+/config/credentials/test.key
+
+/config/credentials/development.key
