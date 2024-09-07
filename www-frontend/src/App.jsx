@@ -13,6 +13,8 @@ import Beers from './components/Beers';
 import Bars from './components/Bars';
 import BarEvents from './components/BarEvents';
 import SearchUser from './components/SearchUser';
+import SignupForm from './components/SignupForm';  // Importamos el formulario de registro
+import LoginForm from './components/LoginForm';    // Importamos el formulario de login
 
 function App() {
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -51,9 +53,22 @@ function App() {
           ModalProps={{ keepMounted: true }}
         >
           <List>
+            {/* Link para buscar usuarios */}
             <ListItem button component={Link} to="/search-user" onClick={toggleDrawer}>
               <ListItemIcon><SearchIcon /></ListItemIcon>
               <ListItemText primary="Search User" />
+            </ListItem>
+
+            {/* Link para iniciar sesión */}
+            <ListItem button component={Link} to="/login" onClick={toggleDrawer}>
+              <ListItemIcon><PersonIcon /></ListItemIcon>
+              <ListItemText primary="Iniciar Sesión" />
+            </ListItem>
+
+            {/* Link para registrarse */}
+            <ListItem button component={Link} to="/signup" onClick={toggleDrawer}>
+              <ListItemIcon><PersonIcon /></ListItemIcon>
+              <ListItemText primary="Registrarse" />
             </ListItem>
           </List>
         </Drawer>
@@ -68,6 +83,8 @@ function App() {
           <Route path="/bars" element={<Bars />} />
           <Route path="/bars/:id/events" element={<BarEvents />} />
           <Route path="/search-user" element={<SearchUser />} />
+          <Route path="/signup" element={<SignupForm />} />   {/* Ruta para el registro */}
+          <Route path="/login" element={<LoginForm />} />     {/* Ruta para el login */}
         </Routes>
 
         {/* Barra Inferior */}
