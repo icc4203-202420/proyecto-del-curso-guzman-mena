@@ -13,7 +13,6 @@ const BeerDetails = () => {
       try {
         const response = await axios.get(`/beers/${id}`);
         setBeer(response.data.beer);
-        console.log(response.data);  // Verifica los datos obtenidos en la consola
       } catch (error) {
         console.error('Error fetching beer details:', error);
       } finally {
@@ -42,9 +41,13 @@ const BeerDetails = () => {
         bgcolor: 'background.default',
       }}
     >
+      {/* Mostrar el nombre de la cerveza y su promedio de puntuación */}
       <Typography variant="h4" sx={{ mb: 2 }}>
-        Detalles de la Cerveza: {beer.name}
+        Detalles de la Cerveza: {beer.name} 
+        {beer.avg_rating ? ` - Rating promedio: ${beer.avg_rating.toFixed(1)} / 5` : ' - No hay reseñas'}
       </Typography>
+
+      {/* Detalles de la cerveza */}
       <Paper
         elevation={1}
         sx={{
@@ -61,7 +64,7 @@ const BeerDetails = () => {
       >
         <Typography variant="h6">Descripción</Typography>
         <Typography variant="body2" color="text.secondary">
-          {beer.description}
+          {beer.description || 'No disponible'}
         </Typography>
 
         <Typography variant="h6" sx={{ mt: 2 }}>Estilo</Typography>
@@ -99,11 +102,13 @@ const BeerDetails = () => {
           {beer.blg || 'No disponible'}
         </Typography>
 
+        {/* Cervecería asociada */}
         <Typography variant="h6" sx={{ mt: 2 }}>Cervecería</Typography>
         <Typography variant="body2" color="text.secondary">
           {beer.brewery ? beer.brewery.name : 'No se encontró cervecería asociada'}
         </Typography>
 
+        {/* Bares que sirven la cerveza */}
         <Typography variant="h6" sx={{ mt: 2 }}>Bares que la sirven</Typography>
         <Grid container spacing={2} sx={{ mt: 1 }}>
           {beer.bars && beer.bars.length > 0 ? (
@@ -116,6 +121,29 @@ const BeerDetails = () => {
             <Typography>No hay bares disponibles.</Typography>
           )}
         </Grid>
+
+        {/* Sección de reseñas */}
+        <Typography variant="h6" sx={{ mt: 2 }}>Reseñas</Typography>
+        {beer.reviews && beer.reviews.length > 0 ? (
+          beer.reviews.map((review, index) => (
+            <Paper
+              key={index}
+              elevation={1}
+              sx={{ p: 2, my: 1, width: '100%', maxWidth: 600 }}
+            >
+              <Typography variant="body2" color="text.secondary">
+                <strong>Puntuación:</strong> {review.rating} / 5
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                {review.text}
+              </Typography>
+            </Paper>
+          ))
+        ) : (
+          <Typography variant="body2" color="text.secondary">
+            No hay reseñas disponibles para esta cerveza.
+          </Typography>
+        )}
       </Paper>
     </Box>
   );

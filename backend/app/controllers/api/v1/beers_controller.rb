@@ -20,27 +20,25 @@ class API::V1::BeersController < ApplicationController
   # end
   
   # GET /beers/:id
-  # GET /beers/:id
-# GET /beers/:id
-def show
-  if @beer
-    brewery = @beer.brand.brewery if @beer.brand
-    bars = @beer.bars
-
-    render json: {
-      beer: @beer.as_json(
-        only: [:name, :style, :hop, :yeast, :malts, :ibu, :alcohol, :blg, :description]
-      ).merge({
-        brewery: brewery.as_json,
-        bars: bars.as_json
-      })
-    }, status: :ok
-  else
-    render json: { error: 'Beer not found' }, status: :not_found
+  def show
+    if @beer
+      brewery = @beer.brand.brewery if @beer.brand
+      bars = @beer.bars
+      reviews = @beer.reviews
+  
+      render json: {
+        beer: @beer.as_json(
+          only: [:name, :style, :hop, :yeast, :malts, :ibu, :alcohol, :blg, :description, :avg_rating]
+        ).merge({
+          brewery: brewery.as_json,
+          bars: bars.as_json,
+          reviews: reviews.as_json(only: [:rating, :text])
+        })
+      }, status: :ok
+    else
+      render json: { error: 'Beer not found' }, status: :not_found
+    end
   end
-end
-
-
 
   # POST /beers
   def create

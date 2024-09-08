@@ -23,5 +23,5 @@ class Beer < ApplicationRecord
     else
       update(avg_rating: 0.0)
     end
-  end  
+  end
 end

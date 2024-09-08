@@ -51,4 +51,16 @@ if Rails.env.development?
     end
   end
 
+  # Crear reseñas para cada cerveza
+  Beer.all.each do |beer|
+    3.times do |i|
+      FactoryBot.create(:review, text: "Esta es la reseña número #{i+1} para la cerveza #{beer.name}. ¡Es excelente!",
+                                rating: rand(1.0..5.0).round(1),
+                                beer: beer,
+                                user: users.sample) # Asigna una reseña aleatoria de los usuarios creados
+    end
+  end
+
 end
+
+puts "Seed completado con países, cervezas, usuarios, bares, eventos, amistades, asistencias y reseñas."
