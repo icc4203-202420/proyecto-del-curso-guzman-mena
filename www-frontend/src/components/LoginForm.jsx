@@ -1,76 +1,87 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { Formik, Form, Field } from 'formik';
+import * as Yup from 'yup';
+import { TextField, Button, Box, Typography } from '@mui/material';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const LoginForm = () => {
-  // Definir el estado para email, password y el token
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [message, setMessage] = useState('');
+  const navigate = useNavigate();
 
-  // Función para manejar la llamada a la API de login
-  const handleLogin = () => {
-    // Datos de inicio de sesión
-    const loginData = {
+  // Esquema de validación con Yup
+  const validationSchema = Yup.object({
+    email: Yup.string().email('Correo inválido').required('El email es requerido'),
+    password: Yup.string().required('La contraseña es requerida').min(6, 'Mínimo 6 caracteres'),
+  });
+
+  const handleLogin = (values, { setSubmitting, setFieldError }) => {
+    axios.post('api/v1/login', {
       user: {
-        email,
-        password
+        email: values.email,
+        password: values.password
       }
-    };
-
-    // Realizar la llamada a la API
-    fetch('http://localhost:3001/api/v1/login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(loginData)
     })
-      .then(response => {
-        // Obtener el token del header 'Authorization'
-        const authorizationToken = response.headers.get('Authorization');
-        return response.json().then(data => ({ data, authorizationToken }));
-      })
-      .then(({ data, authorizationToken }) => {
-        if (authorizationToken) {
-          // Guardar el token en localStorage
-          localStorage.setItem('token', authorizationToken);
-          setMessage(`Login exitoso. Token guardado: ${authorizationToken}`);
-        } else {
-          setMessage('Login exitoso, pero no se recibió un token.');
-        }
-        console.log('Usuario logueado:', data);
-      })
-      .catch(error => {
-        console.error('Error en la llamada de login:', error);
-        setMessage('Error al realizar el login');
-      });
+    .then(response => {
+      const authorizationToken = response.headers['authorization'];
+      if (authorizationToken) {
+        localStorage.setItem('token', authorizationToken);
+        navigate('/'); // Redirigir al dashboard o página principal
+      }
+    })
+    .catch(error => {
+      console.error('Error en el login:', error);
+      setFieldError('general', 'Error en el login');
+    })
+    .finally(() => setSubmitting(false));
   };
 
   return (
-    <div>
-      <h2>Login</h2>
-      <form>
-        <div>
-          <label>Email:</label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-        </div>
-        <div>
-          <label>Password:</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-        </div>
-        <button type="button" onClick={handleLogin}>
-          Iniciar Sesión
-        </button>
-      </form>
-      {message && <p>{message}</p>}
-    </div>
+    <Box sx={{ width: 300, margin: 'auto', mt: 5 }}>
+      <Typography variant="h4" gutterBottom>Login</Typography>
+      <Formik
+        initialValues={{ email: '', password: '' }}
+        validationSchema={validationSchema}
+        onSubmit={handleLogin}
+      >
+        {({ isSubmitting, errors, touched }) => (
+          <Form>
+            <Box mb={2}>
+              <Field
+                name="email"
+                as={TextField}
+                label="Email"
+                variant="outlined"
+                fullWidth
+                error={touched.email && !!errors.email}
+                helperText={touched.email && errors.email}
+              />
+            </Box>
+            <Box mb={2}>
+              <Field
+                name="password"
+                as={TextField}
+                type="password"
+                label="Password"
+                variant="outlined"
+                fullWidth
+                error={touched.password && !!errors.password}
+                helperText={touched.password && errors.password}
+              />
+            </Box>
+            {errors.general && <Typography color="error">{errors.general}</Typography>}
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              fullWidth
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? 'Iniciando sesión...' : 'Iniciar Sesión'}
+            </Button>
+          </Form>
+        )}
+      </Formik>
+    </Box>
   );
 };
 
