@@ -20,16 +20,27 @@ class API::V1::BeersController < ApplicationController
   # end
   
   # GET /beers/:id
-  def show
-    if @beer.image.attached?
-      render json: @beer.as_json.merge({ 
-        image_url: url_for(@beer.image), 
-        thumbnail_url: url_for(@beer.thumbnail)}),
-        status: :ok
-    else
-      render json: { beer: @beer.as_json }, status: :ok
-    end 
+  # GET /beers/:id
+# GET /beers/:id
+def show
+  if @beer
+    brewery = @beer.brand.brewery if @beer.brand
+    bars = @beer.bars
+
+    render json: {
+      beer: @beer.as_json(
+        only: [:name, :style, :hop, :yeast, :malts, :ibu, :alcohol, :blg, :description]
+      ).merge({
+        brewery: brewery.as_json,
+        bars: bars.as_json
+      })
+    }, status: :ok
+  else
+    render json: { error: 'Beer not found' }, status: :not_found
   end
+end
+
+
 
   # POST /beers
   def create

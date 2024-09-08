@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, TextField, Paper, Grid } from '@mui/material';
+import { Box, Typography, TextField, Paper, Grid, Button } from '@mui/material';
+import { Link } from 'react-router-dom'; // Importamos Link para la navegación
 import axios from 'axios';
 
 const Beers = () => {
@@ -10,7 +11,7 @@ const Beers = () => {
     // Fetch beers from the API
     const fetchBeers = async () => {
       try {
-        const response = await axios.get('/api/v1/beers'); // Ajusta la URL
+        const response = await axios.get('/beers'); // Ajusta la URL
         setBeers(response.data.beers);
         console.log(response);
       } catch (error) {
@@ -65,6 +66,16 @@ const Beers = () => {
                 <Typography variant="body2" color="text.secondary">
                   {beer.description}
                 </Typography>
+                {/* Añadir enlace a los detalles de la cerveza */}
+                <Button
+                  variant="contained"
+                  color="primary"
+                  component={Link}
+                  to={`/beers/${beer.id}`}  // Redirige a la página de detalles
+                  sx={{ mt: 2 }}
+                >
+                  Ver Detalles
+                </Button>
               </Paper>
             </Grid>
           ))

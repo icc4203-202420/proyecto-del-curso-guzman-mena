@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { ThemeProvider, CssBaseline } from '@mui/material';
-import { AppBar, Toolbar, Typography, IconButton, Drawer, List, ListItem, ListItemText, ListItemIcon, Box, TextField } from '@mui/material';
+import { AppBar, Toolbar, Typography, IconButton, Drawer, List, ListItem, ListItemText, ListItemIcon, Box } from '@mui/material';
 import useLocalStorageState from 'use-local-storage-state';
 import MenuIcon from '@mui/icons-material/Menu';
 import HomeIcon from '@mui/icons-material/Home';
@@ -11,11 +11,12 @@ import SearchIcon from '@mui/icons-material/Search';
 import theme from './theme';
 import Home from './components/Home';
 import Beers from './components/Beers';
+import BeerDetails from './components/BeerDetails'; // Importamos el componente de detalles de cerveza
 import Bars from './components/Bars';
 import BarEvents from './components/BarEvents';
 import SearchUser from './components/SearchUser';
-import SignupForm from './components/SignupForm';  // Importamos el formulario de registro
-import LoginForm from './components/LoginForm';    // Importamos el formulario de login
+import SignupForm from './components/SignupForm';  
+import LoginForm from './components/LoginForm';
 
 function App() {
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -23,7 +24,8 @@ function App() {
   const toggleDrawer = () => {
     setDrawerOpen(!drawerOpen);
   };
-  // GUARDA EL TOQUEN EN LOCAL STORAGE
+
+  // GUARDA EL TOKEN EN LOCAL STORAGE
   const [token, setToken] = useLocalStorageState('WeatherApp/token', {
     defaultValue: '',
   });
@@ -78,12 +80,13 @@ function App() {
         {/* Contenido Principal */}
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/beers" element={<Beers />} />
+          <Route path="/beers" element={<Beers />} />               {/* Ruta para ver la lista de cervezas */}
+          <Route path="/beers/:id" element={<BeerDetails />} />     {/* Ruta para ver los detalles de una cerveza */}
           <Route path="/bars" element={<Bars />} />
           <Route path="/bars/:id/events" element={<BarEvents />} />
           <Route path="/search-user" element={<SearchUser />} />
-          <Route path="/signup" element={<SignupForm />} />   {/* Ruta para el registro */}
-          <Route path="/login" element={<LoginForm />} />     {/* Ruta para el login */}
+          <Route path="/signup" element={<SignupForm />} />
+          <Route path="/login" element={<LoginForm />} />
         </Routes>
 
         {/* Barra Inferior */}
