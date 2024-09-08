@@ -11,7 +11,7 @@ const BeerDetails = () => {
   useEffect(() => {
     const fetchBeerDetails = async () => {
       try {
-        const response = await axios.get(`/beers/${id}`);
+        const response = await axios.get(`/api/v1/beers/${id}`);
         setBeer(response.data.beer);
       } catch (error) {
         console.error('Error fetching beer details:', error);

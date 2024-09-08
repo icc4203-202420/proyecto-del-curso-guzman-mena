@@ -11,7 +11,7 @@ const Beers = () => {
     // Fetch beers from the API
     const fetchBeers = async () => {
       try {
-        const response = await axios.get('/beers'); // Ajusta la URL
+        const response = await axios.get('/api/v1/beers'); // Ajusta la URL
         setBeers(response.data.beers);
         console.log(response);
       } catch (error) {

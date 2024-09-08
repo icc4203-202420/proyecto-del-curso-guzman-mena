@@ -12,7 +12,7 @@ const Bars = () => {
     // Fetch bars from the API
     const fetchBars = async () => {
       try {
-        const response = await axios.get('/bars'); // Ajusta la URL
+        const response = await axios.get('/api/v1/bars'); // Ajusta la URL
         setBars(response.data.bars);
         console.log(response);
       } catch (error) {
