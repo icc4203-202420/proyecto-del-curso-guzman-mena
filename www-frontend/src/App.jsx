@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { ThemeProvider, CssBaseline } from '@mui/material';
 import { AppBar, Toolbar, Typography, IconButton, Drawer, List, ListItem, ListItemText, ListItemIcon, Box, TextField } from '@mui/material';
+import useLocalStorageState from 'use-local-storage-state';
 import MenuIcon from '@mui/icons-material/Menu';
 import HomeIcon from '@mui/icons-material/Home';
 import MapIcon from '@mui/icons-material/Map';
@@ -22,6 +23,10 @@ function App() {
   const toggleDrawer = () => {
     setDrawerOpen(!drawerOpen);
   };
+  // GUARDA EL TOQUEN EN LOCAL STORAGE
+  const [token, setToken] = useLocalStorageState('WeatherApp/token', {
+    defaultValue: '',
+  });
 
   return (
     <ThemeProvider theme={theme}>
@@ -36,12 +41,6 @@ function App() {
             <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
               My App
             </Typography>
-            <TextField
-              variant="outlined"
-              placeholder="Search..."
-              size="small"
-              sx={{ backgroundColor: 'white', borderRadius: 1 }}
-            />
           </Toolbar>
         </AppBar>
 
