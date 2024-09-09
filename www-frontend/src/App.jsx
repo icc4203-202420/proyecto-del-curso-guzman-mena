@@ -8,6 +8,7 @@ import HomeIcon from '@mui/icons-material/Home';
 import MapIcon from '@mui/icons-material/Map';
 import PersonIcon from '@mui/icons-material/Person';
 import SearchIcon from '@mui/icons-material/Search';
+import LogoutIcon from '@mui/icons-material/Logout';
 import theme from './theme';
 import Home from './components/Home';
 import Beers from './components/Beers';
@@ -41,6 +42,13 @@ function App() {
     fetchUserName(); // Llama a la función para actualizar el nombre de usuario
   }, [token]); // Dependencia en el token para que el efecto se ejecute al cambiar
 
+    // Función para hacer logout
+    const handleLogout = () => {
+      localStorage.clear(); // Borra todo el localStorage
+      setUserName('Espacio para el nombre de usuario'); // Reiniciar el nombre del usuario
+      navigate('/login'); // Redirigir a la página de login
+    };
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
@@ -57,6 +65,9 @@ function App() {
             <Typography variant="body1" sx={{ marginLeft: 'auto' }}>
               {userName}
             </Typography>
+            <IconButton color="inherit" onClick={handleLogout}>
+                <LogoutIcon /> {/* Icono de Logout */}
+            </IconButton>
           </Toolbar>
         </AppBar>
 
