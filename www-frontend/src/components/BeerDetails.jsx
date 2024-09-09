@@ -1,12 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { Box, Typography, Paper, Grid } from '@mui/material';
+import { Box, Typography, Paper, Grid, Button, TextField } from '@mui/material';
 import axios from 'axios';
 
 const BeerDetails = () => {
-  const { id } = useParams();
+  const { id } = useParams();  // ID de la cerveza desde la URL
   const [beer, setBeer] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [rating, setRating] = useState('');
+  const [reviewText, setReviewText] = useState('');
+  const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
 
   useEffect(() => {
     const fetchBeerDetails = async () => {
@@ -22,6 +26,40 @@ const BeerDetails = () => {
 
     fetchBeerDetails();
   }, [id]);
+
+  const handleAddReview = async () => {
+    if (reviewText.length < 15) {
+      setError('La reseña debe tener al menos 15 palabras.');
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.post('/api/v1/reviews', {
+        review: {
+          beer_id: id, // Aseguramos que el beer_id se envíe
+          rating: parseFloat(rating),
+          text: reviewText
+        }
+      }, {
+        headers: {
+          Authorization: token
+        }
+      });
+
+      if (response.status === 201) {
+        setSuccessMessage('Reseña agregada exitosamente.');
+        setError('');
+        setReviewText('');
+        setRating('');
+      } else {
+        setError('Ocurrió un error al agregar la reseña.');
+      }
+    } catch (error) {
+      console.error('Error al agregar la reseña:', error);
+      setError('Ocurrió un error al agregar la reseña.');
+    }
+  };
 
   if (loading) {
     return <Typography>Cargando...</Typography>;
@@ -41,13 +79,11 @@ const BeerDetails = () => {
         bgcolor: 'background.default',
       }}
     >
-      {/* Mostrar el nombre de la cerveza y su promedio de puntuación */}
       <Typography variant="h4" sx={{ mb: 2 }}>
         Detalles de la Cerveza: {beer.name} 
         {beer.avg_rating ? ` - Rating promedio: ${beer.avg_rating.toFixed(1)} / 5` : ' - No hay reseñas'}
       </Typography>
 
-      {/* Detalles de la cerveza */}
       <Paper
         elevation={1}
         sx={{
@@ -102,13 +138,11 @@ const BeerDetails = () => {
           {beer.blg || 'No disponible'}
         </Typography>
 
-        {/* Cervecería asociada */}
         <Typography variant="h6" sx={{ mt: 2 }}>Cervecería</Typography>
         <Typography variant="body2" color="text.secondary">
           {beer.brewery ? beer.brewery.name : 'No se encontró cervecería asociada'}
         </Typography>
 
-        {/* Bares que sirven la cerveza */}
         <Typography variant="h6" sx={{ mt: 2 }}>Bares que la sirven</Typography>
         <Grid container spacing={2} sx={{ mt: 1 }}>
           {beer.bars && beer.bars.length > 0 ? (
@@ -144,6 +178,35 @@ const BeerDetails = () => {
             No hay reseñas disponibles para esta cerveza.
           </Typography>
         )}
+
+        {/* Formulario para agregar reseña */}
+        <Typography variant="h6" sx={{ mt: 4 }}>Agregar Reseña</Typography>
+        <TextField
+          label="Puntuación (1-5)"
+          type="number"
+          value={rating}
+          onChange={(e) => setRating(e.target.value)}
+          fullWidth
+          sx={{ mb: 2 }}
+        />
+        <TextField
+          label="Escribe tu reseña"
+          multiline
+          rows={4}
+          value={reviewText}
+          onChange={(e) => setReviewText(e.target.value)}
+          fullWidth
+          sx={{ mb: 2 }}
+        />
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handleAddReview}
+        >
+          Agregar Reseña
+        </Button>
+        {error && <Typography color="error">{error}</Typography>}
+        {successMessage && <Typography color="primary">{successMessage}</Typography>}
       </Paper>
     </Box>
   );

@@ -24,7 +24,9 @@ Rails.application.routes.draw do
       resources :bars do
         resources :events, only: [:index]
       end
-      resources :beers
+      resources :beers do
+        resources :reviews, only: [:index, :create]  # Aquí anidamos las reseñas dentro de cervezas
+      end
       resources :users do
         # get 'friendships', to: 'users#friendships', on: :member
         # post 'friendships', to: 'users#create_friendship', on: :member
