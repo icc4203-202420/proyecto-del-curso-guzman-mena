@@ -11,6 +11,8 @@ const BeerDetails = () => {
   const [reviewText, setReviewText] = useState('');
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+  const currentUserId = parseInt(localStorage.getItem('userId'), 10);  // Obtener el userId del usuario actual
+  const token = localStorage.getItem('token'); // Obtener el token
 
   useEffect(() => {
     const fetchBeerDetails = async () => {
@@ -34,10 +36,9 @@ const BeerDetails = () => {
     }
 
     try {
-      const token = localStorage.getItem('token');
       const response = await axios.post('/api/v1/reviews', {
         review: {
-          beer_id: id, // Aseguramos que el beer_id se envíe
+          beer_id: id,
           rating: parseFloat(rating),
           text: reviewText
         }
@@ -52,6 +53,10 @@ const BeerDetails = () => {
         setError('');
         setReviewText('');
         setRating('');
+        setBeer(prevBeer => ({
+          ...prevBeer,
+          reviews: [...prevBeer.reviews, response.data]
+        }));
       } else {
         setError('Ocurrió un error al agregar la reseña.');
       }
@@ -68,6 +73,10 @@ const BeerDetails = () => {
   if (!beer) {
     return <Typography>No se encontraron detalles para esta cerveza.</Typography>;
   }
+
+  // Separar las reseñas del usuario actual de las reseñas de otros usuarios
+  const userReview = beer.reviews.find(review => review.user_id === currentUserId);
+  const otherReviews = beer.reviews.filter(review => review.user_id !== currentUserId);
 
   return (
     <Box
@@ -158,8 +167,25 @@ const BeerDetails = () => {
 
         {/* Sección de reseñas */}
         <Typography variant="h6" sx={{ mt: 2 }}>Reseñas</Typography>
-        {beer.reviews && beer.reviews.length > 0 ? (
-          beer.reviews.map((review, index) => (
+
+        {/* Mostrar la reseña del usuario actual, si existe */}
+        {userReview && (
+          <Paper
+            elevation={2}
+            sx={{ p: 2, my: 1, border: '2px solid', borderColor: 'primary.main', width: '100%', maxWidth: 600 }}
+          >
+            <Typography variant="body2" color="text.secondary">
+              <strong>Tu reseña:</strong> {userReview.text}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              <strong>Puntuación:</strong> {userReview.rating} / 5
+            </Typography>
+          </Paper>
+        )}
+
+        {/* Mostrar las reseñas de otros usuarios */}
+        {otherReviews.length > 0 ? (
+          otherReviews.map((review, index) => (
             <Paper
               key={index}
               elevation={1}
