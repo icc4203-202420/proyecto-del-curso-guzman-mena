@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { ThemeProvider, CssBaseline } from '@mui/material';
 import { AppBar, Toolbar, Typography, IconButton, Drawer, List, ListItem, ListItemText, ListItemIcon, Box } from '@mui/material';
@@ -11,24 +11,35 @@ import SearchIcon from '@mui/icons-material/Search';
 import theme from './theme';
 import Home from './components/Home';
 import Beers from './components/Beers';
-import BeerDetails from './components/BeerDetails'; // Importamos el componente de detalles de cerveza
+import BeerDetails from './components/BeerDetails'; 
 import Bars from './components/Bars';
 import BarEvents from './components/BarEvents';
 import SearchUser from './components/SearchUser';
-import SignupForm from './components/SignupForm';  
+import SignupForm from './components/SignupForm';
 import LoginForm from './components/LoginForm';
 
 function App() {
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [userName, setUserName] = useState('Espacio para el nombre del usuario');
+  const [token] = useLocalStorageState('token', { defaultValue: '' });
 
   const toggleDrawer = () => {
     setDrawerOpen(!drawerOpen);
   };
 
-  // GUARDA EL TOKEN EN LOCAL STORAGE
-  const [token, setToken] = useLocalStorageState('WeatherApp/token', {
-    defaultValue: '',
-  });
+  // Efecto para actualizar el nombre de usuario cuando cambia el token
+  useEffect(() => {
+    const fetchUserName = () => {
+      const storedUserName = localStorage.getItem('userName');
+      if (storedUserName) {
+        setUserName(storedUserName);
+      } else {
+        setUserName('Espacio para el nombre del usuario'); // Valor inicial si no hay nombre de usuario
+      }
+    };
+
+    fetchUserName(); // Llama a la función para actualizar el nombre de usuario
+  }, [token]); // Dependencia en el token para que el efecto se ejecute al cambiar
 
   return (
     <ThemeProvider theme={theme}>
@@ -43,6 +54,9 @@ function App() {
             <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
               My App
             </Typography>
+            <Typography variant="body1" sx={{ marginLeft: 'auto' }}>
+              {userName}
+            </Typography>
           </Toolbar>
         </AppBar>
 
@@ -54,19 +68,14 @@ function App() {
           ModalProps={{ keepMounted: true }}
         >
           <List>
-            {/* Link para buscar usuarios */}
             <ListItem button component={Link} to="/search-user" onClick={toggleDrawer}>
               <ListItemIcon><SearchIcon /></ListItemIcon>
               <ListItemText primary="Search User" />
             </ListItem>
-
-            {/* Link para iniciar sesión */}
             <ListItem button component={Link} to="/login" onClick={toggleDrawer}>
               <ListItemIcon><PersonIcon /></ListItemIcon>
               <ListItemText primary="Iniciar Sesión" />
             </ListItem>
-
-            {/* Link para registrarse */}
             <ListItem button component={Link} to="/signup" onClick={toggleDrawer}>
               <ListItemIcon><PersonIcon /></ListItemIcon>
               <ListItemText primary="Registrarse" />
@@ -80,8 +89,8 @@ function App() {
         {/* Contenido Principal */}
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/beers" element={<Beers />} />               {/* Ruta para ver la lista de cervezas */}
-          <Route path="/beers/:id" element={<BeerDetails />} />     {/* Ruta para ver los detalles de una cerveza */}
+          <Route path="/beers" element={<Beers />} />               
+          <Route path="/beers/:id" element={<BeerDetails />} />     
           <Route path="/bars" element={<Bars />} />
           <Route path="/bars/:id/events" element={<BarEvents />} />
           <Route path="/search-user" element={<SearchUser />} />

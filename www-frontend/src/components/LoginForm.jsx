@@ -25,6 +25,7 @@ const LoginForm = () => {
       const authorizationToken = response.headers['authorization'];
       if (authorizationToken) {
         localStorage.setItem('token', authorizationToken);
+        localStorage.setItem('userName', response.data.status.data.user.first_name);
         navigate('/'); // Redirigir al dashboard o página principal
       }
     })
