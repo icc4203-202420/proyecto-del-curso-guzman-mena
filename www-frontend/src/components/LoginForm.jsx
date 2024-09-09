@@ -27,7 +27,7 @@ const LoginForm = () => {
         localStorage.setItem('token', authorizationToken);
         localStorage.setItem('userName', response.data.status.data.user.first_name);
         localStorage.setItem('userId', response.data.status.data.user.id);
-        navigate('/'); // Redirigir al dashboard o página principal
+        navigate('/'); 
       }
     })
     .catch(error => {
