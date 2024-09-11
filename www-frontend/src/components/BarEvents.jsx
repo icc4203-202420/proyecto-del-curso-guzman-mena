@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Paper, Grid } from '@mui/material';
+import { Box, Typography, Paper, Grid, Button } from '@mui/material';
 import axios from 'axios';
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 
 function BarEvents() {
   const { id } = useParams(); // Obtiene el ID del bar de los parámetros de la URL
@@ -9,7 +9,6 @@ function BarEvents() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Fetch events for the specific bar
     const fetchEvents = async () => {
       try {
         const response = await axios.get(`/api/v1/bars/${id}/events`);
@@ -55,12 +54,22 @@ function BarEvents() {
                     textAlign: 'center',
                     borderRadius: 1,
                     height: '100%',
+                    width: '300%',
                   }}
                 >
                   <Typography variant="h6">{event.name}</Typography>
                   <Typography variant="body2" color="text.secondary">
                     {event.description}
                   </Typography>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    sx={{ mt: 2 }}
+                    component={Link}
+                    to={`/events/${event.id}`} // Enlace a la vista detallada del evento
+                  >
+                    Ver Detalles
+                  </Button>
                 </Paper>
               </Grid>
             ))

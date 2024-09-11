@@ -15,6 +15,7 @@ import Beers from './components/Beers';
 import BeerDetails from './components/BeerDetails'; 
 import Bars from './components/Bars';
 import BarEvents from './components/BarEvents';
+import EventDetails from './components/EventDetails';  // Import EventDetails
 import SearchUser from './components/SearchUser';
 import SignupForm from './components/SignupForm';
 import LoginForm from './components/LoginForm';
@@ -42,12 +43,11 @@ function App() {
     fetchUserName(); // Llama a la función para actualizar el nombre de usuario
   }, [token]); // Dependencia en el token para que el efecto se ejecute al cambiar
 
-    // Función para hacer logout
-    const handleLogout = () => {
-      localStorage.clear(); // Borra todo el localStorage
-      setUserName('Espacio para el nombre de usuario'); // Reiniciar el nombre del usuario
-      navigate('/login'); // Redirigir a la página de login
-    };
+  // Función para hacer logout
+  const handleLogout = () => {
+    localStorage.clear(); // Borra todo el localStorage
+    setUserName('Espacio para el nombre de usuario'); // Reiniciar el nombre del usuario
+  };
 
   return (
     <ThemeProvider theme={theme}>
@@ -66,7 +66,7 @@ function App() {
               {userName}
             </Typography>
             <IconButton color="inherit" onClick={handleLogout}>
-                <LogoutIcon /> {/* Icono de Logout */}
+              <LogoutIcon /> {/* Icono de Logout */}
             </IconButton>
           </Toolbar>
         </AppBar>
@@ -104,6 +104,7 @@ function App() {
           <Route path="/beers/:id" element={<BeerDetails />} />     
           <Route path="/bars" element={<Bars />} />
           <Route path="/bars/:id/events" element={<BarEvents />} />
+          <Route path="/events/:id" element={<EventDetails />} />  {/* Ruta para EventDetails */}
           <Route path="/search-user" element={<SearchUser />} />
           <Route path="/signup" element={<SignupForm />} />
           <Route path="/login" element={<LoginForm />} />
