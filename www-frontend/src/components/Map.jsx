@@ -1,25 +1,18 @@
-// Map.jsx
 import React, { useEffect, useRef, useState } from 'react';
 import { Loader } from '@googlemaps/js-api-loader';
 import { MarkerClusterer } from '@googlemaps/markerclusterer';
+import axios from 'axios';
 
 // Constants
 const MAPS_LIBRARY = 'maps';
 const MARKER_LIBRARY = 'marker';
-const GOOGLE_MAPS_LIBRARIES = [MAPS_LIBRARY, MARKER_LIBRARY];
 
-// Utils
-const randomCoordinates =
-  ({ lat, lng }) =>
-  () => ({
-    lat: lat + (Math.random() * 2 - 1) * 0.9,
-    lng: lng + (Math.random() * 2 - 1) * 0.9,
-  });
+const GOOGLE_MAPS_LIBRARIES = [MAPS_LIBRARY, MARKER_LIBRARY];
 
 // Custom Hook
 const useLoadGMapsLibraries = () => {
   const [libraries, setLibraries] = useState();
-  
+
   useEffect(() => {
     const loader = new Loader({
       apiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
@@ -47,12 +40,26 @@ const Map = () => {
   const mapNodeRef = useRef();
   const mapRef = useRef();
   
+  const [bars, setBars] = useState([]);
+  
   useEffect(() => {
-    if (!libraries) {
+    // Fetch bars from the API
+    const fetchBars = async () => {
+      try {
+        const response = await axios.get('/api/v1/bars');
+        setBars(response.data.bars);
+      } catch (error) {
+        console.error('Error fetching bars:', error);
+      }
+    };
+    fetchBars();
+  }, []);
+  
+  useEffect(() => {
+    if (!libraries || bars.length === 0) {
       return;
     }
     
-    console.log(mapNodeRef.current);
     const { Map: GoogleMap } = libraries[MAPS_LIBRARY];
     mapRef.current = new GoogleMap(mapNodeRef.current, {
       mapId: 'DEMO_MAP_ID',
@@ -61,13 +68,37 @@ const Map = () => {
     });
     
     const { AdvancedMarkerElement: Marker } = libraries[MARKER_LIBRARY];
-    const positions = Array.from({ length: 10 }, randomCoordinates(MAP_CENTER));
-    const markers = positions.map((position) => new Marker({ position }));
+    
+    // Create markers based on bar coordinates
+    const infowindow = new google.maps.InfoWindow(); // Create an InfoWindow instance
+    const markers = bars.map((bar) => {
+      const marker = new Marker({
+        position: { lat: bar.latitude, lng: bar.longitude },
+      });
+
+      // Set up an InfoWindow for each marker
+      marker.addListener('click', () => {
+        infowindow.setContent(`
+          <div style="font-family: Arial, sans-serif; color: black; width: 200px;">
+            <div style="font-size: 16px; font-weight: bold; margin-bottom: 8px;">
+              ${bar.name}
+            </div>
+            <div style="font-size: 14px; color: #333;">
+              Descripcion
+            </div>
+          </div>
+        `); // Set the content with black text and styled layout
+        infowindow.open(mapRef.current, marker);
+      });
+
+      return marker;
+    });
+    
     markerCluster.current = new MarkerClusterer({
       map: mapRef.current,
       markers,
     });
-  }, [libraries]);
+  }, [libraries, bars]);
   
   if (!libraries) {
     return <h1>Cargando...</h1>;
@@ -77,3 +108,8 @@ const Map = () => {
 };
 
 export default Map;
+
+
+// notas
+// busqueda en stop por que falta el comit del ayudante
+// (busqueda buscando calles o lo que sea dentro del response)
