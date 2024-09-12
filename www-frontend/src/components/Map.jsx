@@ -1,6 +1,6 @@
 // Map.jsx
 import React, { useEffect, useRef, useState } from 'react';
-import { Loader } from '@googlemaps/js-api-loader'; // Asegúrate de tener esta dependencia instalada
+import { Loader } from '@googlemaps/js-api-loader';
 import { MarkerClusterer } from '@googlemaps/markerclusterer';
 
 // Constants
@@ -39,7 +39,7 @@ const useLoadGMapsLibraries = () => {
 };
 
 // Map Component
-const MAP_CENTER = { lat: -31.56391, lng: 147.154312 };
+const MAP_CENTER = { lat: -33.4039996, lng: -70.5074689 };
 
 const Map = () => {
   const libraries = useLoadGMapsLibraries();
