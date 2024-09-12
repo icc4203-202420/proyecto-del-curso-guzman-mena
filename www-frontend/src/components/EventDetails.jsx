@@ -11,7 +11,7 @@ const EventDetails = () => {
   const [attendees, setAttendees] = useState([]);
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
-  const theme = useTheme(); // Accede al tema
+  const theme = useTheme();
 
   useEffect(() => {
     const fetchEventDetails = async () => {
@@ -32,9 +32,10 @@ const EventDetails = () => {
   }, [id]);
 
   const handleCheckIn = async () => {
+    const userId = localStorage.getItem('userId');
     try {
       const response = await axios.post(`/api/v1/events/${id}/attendances`, {
-        user_id: 1 // Asegúrate de que este valor sea dinámico si lo obtienes de algún lugar, como localStorage
+        user_id: userId
       });
   
       if (response.status === 201) {
