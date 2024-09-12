@@ -28,9 +28,16 @@ if Rails.env.development?
     user.address.update(country: countries.sample)
   end
 
-  # Crear bares con direcciones y cervezas asociadas
-  bars = FactoryBot.create_list(:bar, 5) do |bar|
+  # Crear bares con direcciones y cervezas asociadas, ajustando latitud y longitud
+  bars = FactoryBot.create_list(:bar, 10) do |bar|
     bar.address.update(country: countries.sample)
+    
+    # Ajustar latitud y longitud cerca de Santiago de Chile
+    bar.update(
+      latitude: -33.45 + rand(-0.05..0.05),  # Latitud cercana a Santiago
+      longitude: -70.65 + rand(-0.05..0.05)  # Longitud cercana a Santiago
+    )
+    
     bar.beers << Beer.all.sample(rand(1..3))
   end
 
