@@ -33,6 +33,10 @@ const EventDetails = () => {
 
   const handleCheckIn = async () => {
     const userId = localStorage.getItem('userId');
+    if (!userId) {
+      setErrorMessage('Debes iniciar sesión antes de confirmar tu asistencia.');
+      return;
+    }
     try {
       const response = await axios.post(`/api/v1/events/${id}/attendances`, {
         user_id: userId
@@ -51,7 +55,9 @@ const EventDetails = () => {
       if (error.response) {
         setErrorMessage(`Error al hacer check-in: ${error.response.data.error || 'No se pudo procesar la solicitud.'}`);
       } else if (error.request) {
+        // revise si el frontend o el backend estan apagados
         setErrorMessage('Error al hacer check-in: No se recibió respuesta del servidor.');
+        
       } else {
         setErrorMessage(`Error al hacer check-in: ${error.message}`);
       }
