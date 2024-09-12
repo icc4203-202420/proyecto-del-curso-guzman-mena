@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { Box, Typography, Paper, Button, Grid, TextField } from '@mui/material';
+import { Box, Typography, Paper, Button, Grid } from '@mui/material';
 import axios from 'axios';
+import { useTheme } from '@mui/material/styles';
 
 const EventDetails = () => {
-  const { id } = useParams(); // ID del evento desde la URL
+  const { id } = useParams();
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [attendees, setAttendees] = useState([]);
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+  const theme = useTheme(); // Accede al tema
 
   useEffect(() => {
     const fetchEventDetails = async () => {
@@ -32,30 +32,28 @@ const EventDetails = () => {
   }, [id]);
 
   const handleCheckIn = async () => {
-    if (!firstName || !lastName) {
-      setErrorMessage('Por favor ingresa tu nombre y apellido.');
-      return;
-    }
-
     try {
       const response = await axios.post(`/api/v1/events/${id}/attendances`, {
-        user: {
-          first_name: firstName,
-          last_name: lastName,
-        },
+        user_id: 1 // Asegúrate de que este valor sea dinámico si lo obtienes de algún lugar, como localStorage
       });
-
+  
       if (response.status === 201) {
         setSuccessMessage('¡Has confirmado tu asistencia!');
-        setAttendees([...attendees, { first_name: firstName, last_name: lastName }]); // Añadir al nuevo asistente
-        setErrorMessage('');
-        setFirstName('');
-        setLastName('');
+        
+        // Recargar la lista de asistentes después de un check-in exitoso
+        const attendeesResponse = await axios.get(`/api/v1/events/${id}/attendances`);
+        setAttendees(attendeesResponse.data.attendees);
       } else {
         setErrorMessage('No se pudo confirmar la asistencia.');
       }
     } catch (error) {
-      setErrorMessage('Error al hacer check-in: ' + error.message);
+      if (error.response) {
+        setErrorMessage(`Error al hacer check-in: ${error.response.data.error || 'No se pudo procesar la solicitud.'}`);
+      } else if (error.request) {
+        setErrorMessage('Error al hacer check-in: No se recibió respuesta del servidor.');
+      } else {
+        setErrorMessage(`Error al hacer check-in: ${error.message}`);
+      }
     }
   };
 
@@ -123,26 +121,15 @@ const EventDetails = () => {
           )}
         </Grid>
 
-        <Typography variant="h6" sx={{ mt: 4 }}>Confirmar Asistencia</Typography>
-        <TextField
-          label="Nombre"
-          value={firstName}
-          onChange={(e) => setFirstName(e.target.value)}
-          fullWidth
-          sx={{ mb: 2 }}
-        />
-        <TextField
-          label="Apellido"
-          value={lastName}
-          onChange={(e) => setLastName(e.target.value)}
-          fullWidth
-          sx={{ mb: 2 }}
-        />
         <Button variant="contained" color="primary" sx={{ mt: 2 }} onClick={handleCheckIn}>
           Confirmar Asistencia
         </Button>
 
-        {errorMessage && <Typography color="error">{errorMessage}</Typography>}
+        {errorMessage && (
+          <Typography sx={{ mt: 2, fontWeight: 'bold', fontSize: '1.2rem', color: theme.palette.error.main }}>
+            {errorMessage}
+          </Typography>
+        )}
         {successMessage && <Typography color="primary">{successMessage}</Typography>}
       </Paper>
     </Box>
