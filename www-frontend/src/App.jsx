@@ -19,6 +19,7 @@ import EventDetails from './components/EventDetails';  // Import EventDetails
 import SearchUser from './components/SearchUser';
 import SignupForm from './components/SignupForm';
 import LoginForm from './components/LoginForm';
+import Map from './components/Map';
 
 function App() {
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -108,6 +109,7 @@ function App() {
           <Route path="/search-user" element={<SearchUser />} />
           <Route path="/signup" element={<SignupForm />} />
           <Route path="/login" element={<LoginForm />} />
+          <Route path="/map" element={<Map />} />
         </Routes>
 
         {/* Barra Inferior */}
@@ -131,8 +133,9 @@ function App() {
           <IconButton component={Link} to="/" color="inherit">
             <HomeIcon />
           </IconButton>
-          <IconButton color="inherit">
+          <IconButton component={Link} to="/map" color="inherit">
             <MapIcon />
+            
           </IconButton>
         </Box>
       </Router>
