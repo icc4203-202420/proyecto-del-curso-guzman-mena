@@ -9,11 +9,15 @@ class API::V1::EventsController < ApplicationController
   # GET /bar/:bar_id/events
   def index
     if @bar.events.any?
-      render json: @bar.events, status: :ok
+      render json: { 
+        bar: @bar.as_json(include: { address: { include: :country } }), 
+        events: @bar.events 
+      }, status: :ok
     else
       render json: { message: "No events found for this bar" }, status: :ok
     end
   end
+  
 
   # GET /events/:id
   def show
