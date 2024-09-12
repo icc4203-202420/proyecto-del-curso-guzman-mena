@@ -1,14 +1,29 @@
 require 'factory_bot_rails'
 
-# This file should ensure the existence of records required to run the application in every environment (production,
-# development, test). The code here should be idempotent so that it can be executed at any point in every environment.
-# The data can then be loaded with the bin/rails db:seed command (or created alongside the database with db:setup).
-#
-# Example:
-#
-#   ["Action", "Comedy", "Drama", "Horror"].each do |genre_name|
-#     MovieGenre.find_or_create_by!(name: genre_name)
-#   end
+# Eliminar todos los datos existentes para evitar conflictos
+puts "Eliminando todos los datos existentes..."
+
+# Deshabilitar las restricciones de claves foráneas temporalmente
+ActiveRecord::Base.connection.execute("PRAGMA foreign_keys = OFF")
+
+# Orden correcto de eliminación de tablas con relaciones
+Attendance.destroy_all
+Review.destroy_all
+Friendship.destroy_all
+Event.destroy_all
+Bar.destroy_all
+Beer.destroy_all
+Brand.destroy_all
+Brewery.destroy_all
+User.destroy_all
+Address.destroy_all
+Country.destroy_all
+ReviewCounter.destroy_all
+
+# Rehabilitar las restricciones de claves foráneas
+ActiveRecord::Base.connection.execute("PRAGMA foreign_keys = ON")
+
+puts "Datos eliminados exitosamente."
 
 # Initialize the review counter
 ReviewCounter.create(count: 0)
@@ -31,13 +46,13 @@ if Rails.env.development?
   # Crear bares con direcciones y cervezas asociadas, ajustando latitud y longitud
   bars = FactoryBot.create_list(:bar, 10) do |bar|
     bar.address.update(country: countries.sample)
-    
+
     # Ajustar latitud y longitud cerca de Santiago de Chile
     bar.update(
       latitude: -33.45 + rand(-0.05..0.05),  # Latitud cercana a Santiago
       longitude: -70.65 + rand(-0.05..0.05)  # Longitud cercana a Santiago
     )
-    
+
     bar.beers << Beer.all.sample(rand(1..3))
   end
 
