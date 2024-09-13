@@ -1,7 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Loader } from '@googlemaps/js-api-loader';
 import { MarkerClusterer } from '@googlemaps/markerclusterer';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+
+
 
 // Constants
 const MAPS_LIBRARY = 'maps';
@@ -41,6 +44,7 @@ const Map = () => {
   const mapRef = useRef();
   
   const [bars, setBars] = useState([]);
+  const navigate = useNavigate();
   
   useEffect(() => {
     // Fetch bars from the API
@@ -83,9 +87,10 @@ const Map = () => {
             <div style="font-size: 16px; font-weight: bold; margin-bottom: 8px;">
               ${bar.name}
             </div>
-            <div style="font-size: 14px; color: #333;">
-              Descripcion
-            </div>
+            <button style="margin-top: 8px; padding: 5px 10px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;"
+                    onclick="location.href='/bars/${bar.id}/events'">
+              Ver Bar
+            </button>
           </div>
         `); // Set the content with black text and styled layout
         infowindow.open(mapRef.current, marker);
@@ -108,8 +113,3 @@ const Map = () => {
 };
 
 export default Map;
-
-
-// notas
-// busqueda en stop por que falta el comit del ayudante
-// (busqueda buscando calles o lo que sea dentro del response)
