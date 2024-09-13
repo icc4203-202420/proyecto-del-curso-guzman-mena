@@ -99,18 +99,20 @@ function App() {
         <Toolbar /> 
 
         {/* Contenido Principal */}
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/beers" element={<Beers />} />               
-          <Route path="/beers/:id" element={<BeerDetails />} />     
-          <Route path="/bars" element={<Bars />} />
-          <Route path="/bars/:id/events" element={<BarEvents />} />
-          <Route path="/events/:id" element={<EventDetails />} />  {/* Ruta para EventDetails */}
-          <Route path="/search-user" element={<SearchUser />} />
-          <Route path="/signup" element={<SignupForm />} />
-          <Route path="/login" element={<LoginForm />} />
-          <Route path="/map" element={<Map />} />
-        </Routes>
+        <Box sx={{ paddingBottom: '56px' }}> {/* Añade padding-bottom para el espacio de la barra inferior */}
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/beers" element={<Beers />} />               
+            <Route path="/beers/:id" element={<BeerDetails />} />     
+            <Route path="/bars" element={<Bars />} />
+            <Route path="/bars/:id/events" element={<BarEvents />} />
+            <Route path="/events/:id" element={<EventDetails />} />  {/* Ruta para EventDetails */}
+            <Route path="/search-user" element={<SearchUser />} />
+            <Route path="/signup" element={<SignupForm />} />
+            <Route path="/login" element={<LoginForm />} />
+            <Route path="/map" element={<Map />} />
+          </Routes>
+        </Box>
 
         {/* Barra Inferior */}
         <Box
@@ -125,6 +127,7 @@ function App() {
             alignItems: 'center',
             height: '56px',
             borderTop: '1px solid rgba(255, 255, 255, 0.12)',
+            zIndex: 1300, // Asegúrate de que la barra inferior esté encima del contenido
           }}
         >
           <IconButton color="inherit">
@@ -135,7 +138,6 @@ function App() {
           </IconButton>
           <IconButton component={Link} to="/map" color="inherit">
             <MapIcon />
-            
           </IconButton>
         </Box>
       </Router>
