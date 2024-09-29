@@ -12,8 +12,9 @@ const EventDetails = () => {
   const [attendees, setAttendees] = useState([]);
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
-  const [images, setImages] = useState([]); // Para almacenar múltiples imágenes
-  const [isTakingPhoto, setIsTakingPhoto] = useState(false); // Para controlar cuando se toma una foto
+  const [uploadedImages, setUploadedImages] = useState([]); // Imágenes ya subidas
+  const [newImages, setNewImages] = useState([]); // Imágenes que seleccionas pero aún no has subido
+  const [isTakingPhoto, setIsTakingPhoto] = useState(false);
   const videoRef = useRef(null);
   const theme = useTheme();
 
@@ -21,7 +22,10 @@ const EventDetails = () => {
     const fetchEventDetails = async () => {
       try {
         const eventResponse = await axios.get(`/api/v1/events/${id}`);
-        setEvent(eventResponse.data.event);
+        const eventData = eventResponse.data.event;
+
+        setEvent(eventData);
+        setUploadedImages(eventData.images); // Obtener las imágenes ya subidas
 
         const attendeesResponse = await axios.get(`/api/v1/events/${id}/attendances`);
         setAttendees(attendeesResponse.data.attendees);
@@ -49,7 +53,6 @@ const EventDetails = () => {
       if (response.status === 201) {
         setSuccessMessage('¡Has confirmado tu asistencia!');
 
-        // Recargar la lista de asistentes después de un check-in exitoso
         const attendeesResponse = await axios.get(`/api/v1/events/${id}/attendances`);
         setAttendees(attendeesResponse.data.attendees);
       } else {
@@ -69,16 +72,19 @@ const EventDetails = () => {
   // Manejar la selección de imágenes desde la galería
   const handleImageUpload = (event) => {
     const files = event.target.files;
-    const newImages = [...images];
+    const selectedImages = [...newImages];
+    
     for (let i = 0; i < files.length; i++) {
-      const imageUrl = URL.createObjectURL(files[i]);
-      newImages.push({
-        url: imageUrl,
-        type: files[i].type,
-        size: files[i].size
+      const file = files[i];
+      selectedImages.push({
+        file,  // Almacena el archivo real
+        url: URL.createObjectURL(file),  // Para previsualizar la imagen
+        type: file.type,
+        size: file.size
       });
     }
-    setImages(newImages);
+  
+    setNewImages(selectedImages);
   };
 
   // Manejar la toma de fotos con la cámara
@@ -92,7 +98,6 @@ const EventDetails = () => {
         videoRef.current.play();
       }
   
-      // Espera unos segundos para capturar la imagen
       setTimeout(() => {
         const canvas = document.createElement('canvas');
         canvas.width = videoRef.current.videoWidth;
@@ -101,50 +106,51 @@ const EventDetails = () => {
         const context = canvas.getContext('2d');
         context.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
   
-        // Captura la imagen en formato PNG
         const imageUrl = canvas.toDataURL('image/png');
   
-        // Agregar la imagen capturada al estado de imágenes
-        setImages(prevImages => [...prevImages, { url: imageUrl, type: 'image/png', size: canvas.width * canvas.height * 4 }]); // Estimación de tamaño
-  
-        // Detener el flujo de video después de capturar la imagen
+        setNewImages((prevImages) => [...prevImages, { url: imageUrl, type: 'image/png' }]);
+
         const tracks = stream.getTracks();
-        tracks.forEach(track => track.stop());
+        tracks.forEach((track) => track.stop());
   
-        // Apagar la cámara y limpiar el video
         videoRef.current.srcObject = null;
         setIsTakingPhoto(false);
-      }, 3000); // 3 segundos para capturar la imagen
+      }, 3000);
     } catch (error) {
       console.error('Error al acceder a la cámara:', error);
     }
   };
 
-  // Eliminar una imagen de la lista
+  // Eliminar una imagen de la lista de nuevas imágenes
   const handleDeleteImage = (index) => {
-    const newImages = images.filter((_, i) => i !== index);
-    setImages(newImages);
+    const updatedNewImages = newImages.filter((_, i) => i !== index);
+    setNewImages(updatedNewImages);
   };
 
   // Subir todas las imágenes seleccionadas
   const handleUploadImages = async () => {
-    if (images.length === 0) {
+    if (newImages.length === 0) {
       setErrorMessage('Debes seleccionar o tomar al menos una foto antes de subir.');
       return;
     }
     try {
       const formData = new FormData();
-      // Convertir las URLs de imágenes a blobs
-      await Promise.all(images.map(async (image, index) => {
-        const response = await fetch(image.url);
-        const blob = await response.blob();
-        formData.append(`image_${index}`, blob, `image_${index}.png`); // Asigna un nombre en formato .png
-      }));
-
-      const response = await axios.post(`/api/v1/events/${id}/upload-images`, formData);
+      newImages.forEach((image, index) => {
+        if (image.file) {
+          formData.append('images[]', image.file, `image_${index}.png`);
+        }
+      });
+  
+      const response = await axios.post(`/api/v1/events/${id}/upload_images`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+  
       if (response.status === 200) {
         setSuccessMessage('Imágenes subidas con éxito');
-        setImages([]); // Limpiar las imágenes después de subir
+        setNewImages([]); // Limpiar las imágenes seleccionadas
+        setUploadedImages((prevImages) => [...prevImages, ...newImages]); // Agregar las nuevas imágenes subidas
       } else {
         setErrorMessage('Error al subir imágenes.');
       }
@@ -222,54 +228,65 @@ const EventDetails = () => {
           Confirmar Asistencia
         </Button>
 
-        {/* Botón para seleccionar imágenes */}
+        {/* Sección para las imágenes ya subidas */}
+        <Box sx={{ mt: 4, width: '100%' }}>
+          <Typography variant="h6">Imágenes del Evento</Typography>
+          <Grid container spacing={2} sx={{ mt: 2 }}>
+            {uploadedImages.length > 0 ? (
+              uploadedImages.map((image, index) => (
+                <Grid item xs={12} sm={4} key={index}>
+                  <img src={image.url || image} alt={`Imagen ${index + 1}`} style={{ width: '100%', borderRadius: '8px' }} />
+                </Grid>
+              ))
+            ) : (
+              <Typography>No hay imágenes disponibles.</Typography>
+            )}
+          </Grid>
+        </Box>
+
+        {/* Sección para imágenes nuevas seleccionadas pero aún no subidas */}
+        <Box sx={{ mt: 4, width: '100%' }}>
+          <Typography variant="h6">Imágenes seleccionadas para subir</Typography>
+          <Grid container spacing={2} sx={{ mt: 2 }}>
+            {newImages.length > 0 ? (
+              newImages.map((image, index) => (
+                <Grid item xs={12} sm={4} key={index}>
+                  <Paper sx={{ p: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                    <img src={image.url} alt={`Selected ${index}`} style={{ width: '100%', height: 'auto', borderRadius: '8px' }} />
+                    <Typography variant="caption">Tipo: {image.type}</Typography>
+                    <Typography variant="caption">Tamaño: {(image.size / 1024).toFixed(2)} KB</Typography>
+                    <IconButton onClick={() => handleDeleteImage(index)} aria-label="delete" color="error">
+                      <DeleteIcon />
+                    </IconButton>
+                  </Paper>
+                </Grid>
+              ))
+            ) : (
+              <Typography></Typography>
+            )}
+          </Grid>
+        </Box>
+
+        {/* Botones para subir y seleccionar imágenes */}
+        <Button variant="contained" color="primary" onClick={handleUploadImages} sx={{ mt: 2 }}>
+          Subir Imágenes
+        </Button>
+
         <label htmlFor="image-upload" style={{ cursor: 'pointer' }}>
           <Input
             id="image-upload"
             type="file"
             inputProps={{ multiple: true }}
             onChange={handleImageUpload}
-            sx={{ display: 'none' }} // Ocultar el input real
+            sx={{ display: 'none' }}
           />
           <Button variant="contained" component="span" sx={{ mt: 2 }}>
             Seleccionar Imágenes
           </Button>
         </label>
-        
-        <Button
-          variant="contained"
-          color="secondary"
-          onClick={handleTakePhoto}
-          sx={{ mt: 2 }}
-        >
+
+        <Button variant="contained" color="secondary" onClick={handleTakePhoto} sx={{ mt: 2 }}>
           Tomar Foto
-        </Button>
-
-        {/* Mensajes de error y éxito */}
-        {errorMessage && <Typography color="error" sx={{ mt: 2 }}>{errorMessage}</Typography>}
-        {successMessage && <Typography color="success.main" sx={{ mt: 2 }}>{successMessage}</Typography>}
-
-        {/* Listado de imágenes seleccionadas */}
-        <Box sx={{ mt: 2 }}>
-          <Typography variant="h6">Imágenes seleccionadas:</Typography>
-          <Grid container spacing={2}>
-            {images.map((image, index) => (
-              <Grid item xs={12} sm={6} md={4} key={index}>
-                <Paper sx={{ p: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                  <img src={image.url} alt={`Selected ${index}`} style={{ width: '100%', height: 'auto', borderRadius: '8px' }} />
-                  <Typography variant="caption">Tipo: {image.type}</Typography>
-                  <Typography variant="caption">Tamaño: {(image.size / 1024).toFixed(2)} KB</Typography>
-                  <IconButton onClick={() => handleDeleteImage(index)} aria-label="delete" color="error">
-                    <DeleteIcon />
-                  </IconButton>
-                </Paper>
-              </Grid>
-            ))}
-          </Grid>
-        </Box>
-
-        <Button variant="contained" color="primary" onClick={handleUploadImages} sx={{ mt: 2 }}>
-          Subir Imágenes
         </Button>
       </Paper>
 

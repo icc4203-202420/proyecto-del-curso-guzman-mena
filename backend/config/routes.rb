@@ -21,6 +21,9 @@ Rails.application.routes.draw do
 
       resources :events do
         resources :attendances, only: [:create, :index]  # Rutas para el check-in y ver asistentes
+        member do
+          post :upload_images  # Ruta personalizada para subir imágenes
+        end
       end
 
       resources :beers do

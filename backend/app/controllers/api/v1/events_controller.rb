@@ -3,8 +3,8 @@ class API::V1::EventsController < ApplicationController
   include Authenticable
   respond_to :json
   before_action :set_bar, only: [:index, :create]
-  before_action :set_event, only: [:show, :update, :destroy]
   before_action :verify_jwt_token, only: [:create, :update, :destroy]
+  before_action :set_event, only: [:show, :update, :destroy, :upload_images]
 
   # GET /bar/:bar_id/events
   def index
@@ -21,18 +21,13 @@ class API::V1::EventsController < ApplicationController
 
   # GET /events/:id
   def show
-    if @event
-      event_data = @event.as_json
-      if @event.flyer.attached?
-        event_data.merge!(
-          image_url: url_for(@event.flyer),
-          thumbnail_url: url_for(@event.thumbnail)
-        )
-      end
-      render json: { event: event_data }, status: :ok
-    else
-      render json: { error: "Event not found" }, status: :not_found
+    event_data = @event.as_json
+    if @event.images.attached?
+      event_data.merge!(
+        images: @event.images.map { |image| url_for(image) }
+      )
     end
+    render json: { event: event_data }, status: :ok
   end
 
   # POST /bars/:bar_id/events
@@ -67,6 +62,17 @@ class API::V1::EventsController < ApplicationController
     end
   end
 
+  def upload_images
+    if params[:images].present?
+      params[:images].each do |image|
+        @event.images.attach(image)
+      end
+      render json: { message: 'Images uploaded successfully.' }, status: :ok
+    else
+      render json: { error: 'No images provided.' }, status: :unprocessable_entity
+    end
+  end
+
   private
 
   # Verificar que el evento pertenece al bar adecuado
@@ -76,7 +82,7 @@ class API::V1::EventsController < ApplicationController
   end
 
   def set_event
-    @event = Event.find_by(id: params[:id])
+    @event = Event.find(params[:id])
     render json: { error: 'Event not found' }, status: :not_found unless @event
   end
 
