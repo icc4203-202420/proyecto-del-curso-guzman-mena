@@ -29,6 +29,12 @@ class API::V1::UsersController < ApplicationController
     end
   end
 
+  def search_by_handle
+    users = User.where("handle LIKE ?", "%#{params[:handle]}%")
+    render json: users, status: :ok
+  end
+  
+
   private
 
   def set_user

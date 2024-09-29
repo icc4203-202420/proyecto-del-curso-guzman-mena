@@ -1,6 +1,4 @@
 class API::V1::FriendshipsController < ApplicationController
-  include Authenticable
-
   respond_to :json
   before_action :set_user, only: [:index, :create]
 
@@ -14,16 +12,16 @@ class API::V1::FriendshipsController < ApplicationController
   def create
     @friend = User.find_by(id: friendship_params[:friend_id])
     return render json: { error: 'Friend not found' }, status: :not_found unless @friend
-  
+
+    # Crea la amistad sin necesidad de bar_id
     @friendship = @user.friendships.build(friend: @friend, bar_id: friendship_params[:bar_id])
-  
+
     if @friendship.save
       render json: @friendship, status: :created
     else
       render json: @friendship.errors, status: :unprocessable_entity
     end
   end
-  
 
   private
 
@@ -34,8 +32,6 @@ class API::V1::FriendshipsController < ApplicationController
   end
 
   def friendship_params
-    params.require(:friendship).permit(:friend_id, :bar_id)
+    params.require(:friendship).permit(:friend_id)  # bar_id es opcional
   end
-  
-  
 end
