@@ -25,7 +25,9 @@ const EventDetails = () => {
         const eventData = eventResponse.data.event;
 
         setEvent(eventData);
-        setUploadedImages(eventData.images); // Obtener las imágenes ya subidas
+
+        // Si el evento tiene imágenes, las establecemos, si no, dejamos el arreglo vacío
+        setUploadedImages(eventData.images || []); 
 
         const attendeesResponse = await axios.get(`/api/v1/events/${id}/attendances`);
         setAttendees(attendeesResponse.data.attendees);
