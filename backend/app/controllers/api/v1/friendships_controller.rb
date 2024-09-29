@@ -4,8 +4,15 @@ class API::V1::FriendshipsController < ApplicationController
 
   # GET /api/v1/users/:user_id/friendships
   def index
-    @friendships = @user.friendships.includes(:friend)
-    render json: @friendships.map { |f| f.friend }, status: :ok
+    user = User.find(params[:user_id])
+    friends = user.friendships.includes(:friend).map do |friendship|
+      {
+        friend: friendship.friend,
+        first_shared_event: first_shared_event(user, friendship.friend)
+      }
+    end
+
+    render json: friends, status: :ok
   end
 
   # POST /api/v1/users/:user_id/friendships
@@ -33,5 +40,12 @@ class API::V1::FriendshipsController < ApplicationController
 
   def friendship_params
     params.require(:friendship).permit(:friend_id)  # bar_id es opcional
+  end
+  def first_shared_event(user1, user2)
+    Event.joins(:attendances)
+         .where(attendances: { user_id: user1.id })
+         .where(id: Attendance.select(:event_id).where(user_id: user2.id))
+         .order(:date)
+         .first
   end
 end

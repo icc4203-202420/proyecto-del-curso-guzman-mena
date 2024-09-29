@@ -12,14 +12,15 @@ import LogoutIcon from '@mui/icons-material/Logout';
 import theme from './theme';
 import Home from './components/Home';
 import Beers from './components/Beers';
-import BeerDetails from './components/BeerDetails'; 
+import BeerDetails from './components/BeerDetails';
 import Bars from './components/Bars';
 import BarEvents from './components/BarEvents';
-import EventDetails from './components/EventDetails';  // Import EventDetails
+import EventDetails from './components/EventDetails'; // Import EventDetails
 import SearchUser from './components/SearchUser';
 import SignupForm from './components/SignupForm';
 import LoginForm from './components/LoginForm';
 import Map from './components/Map';
+import FriendsList from './components/FriendsList'; // Import FriendsList
 
 function App() {
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -111,6 +112,7 @@ function App() {
             <Route path="/signup" element={<SignupForm />} />
             <Route path="/login" element={<LoginForm />} />
             <Route path="/map" element={<Map />} />
+            <Route path="/friends" element={<FriendsList />} /> {/* Nueva ruta para FriendsList */}
           </Routes>
         </Box>
 
@@ -130,7 +132,7 @@ function App() {
             zIndex: 1300, // Asegúrate de que la barra inferior esté encima del contenido
           }}
         >
-          <IconButton color="inherit">
+          <IconButton component={Link} to="/friends" color="inherit"> {/* Botón para ver amigos */}
             <PersonIcon />
           </IconButton>
           <IconButton component={Link} to="/" color="inherit">
