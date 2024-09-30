@@ -251,12 +251,13 @@ const EventDetails = () => {
         </Grid>
 
         <Button variant="contained" color="primary" sx={{ mt: 2 }} onClick={handleCheckIn}>
-          Confirmar Asistencia
+          Confirmar Asistencia 
         </Button>
-
+        <Box sx={{ mt: 4 }} /> {/* Espacio entre el botón y las imágenes */}
+        <Typography variant="h6">Imágenes del Evento</Typography>
         {/* Sección para las imágenes ya subidas */}
         <Box sx={{ mt: 4, width: '100%', maxHeight: 300, overflowY: 'scroll' }}>
-          <Typography variant="h6">Imágenes del Evento</Typography>
+          
           <Grid container spacing={2} sx={{ mt: 2 }}>
           {uploadedImages.length > 0 ? (
   uploadedImages.map((image, index) => (
@@ -283,7 +284,7 @@ const EventDetails = () => {
 
         {/* Sección para imágenes nuevas seleccionadas pero aún no subidas */}
         <Box sx={{ mt: 4, width: '100%' }}>
-          <Typography variant="h6">Imágenes seleccionadas para subir</Typography>
+          <Typography variant="h6">Imágenes seleccionadas para subir (Etiquetar antes de seleccionar o sacar la foto)</Typography>
           <Grid container spacing={2} sx={{ mt: 2 }}>
           {newImages.length > 0 ? (
   newImages.map((image, index) => (
