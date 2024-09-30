@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
-import { Box, Typography, Paper, Button, Grid, Input, IconButton } from '@mui/material';
+import { Box, Typography, Paper, Button, Grid, Input, IconButton, TextField, Autocomplete } from '@mui/material';
 import axios from 'axios';
 import { useTheme } from '@mui/material/styles';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -15,6 +15,8 @@ const EventDetails = () => {
   const [uploadedImages, setUploadedImages] = useState([]); // Imágenes ya subidas
   const [newImages, setNewImages] = useState([]); // Imágenes que seleccionas pero aún no has subido
   const [isTakingPhoto, setIsTakingPhoto] = useState(false);
+  const [users, setUsers] = useState([]); // Lista de usuarios para etiquetar
+  const [selectedUser, setSelectedUser] = useState(null); // Usuario etiquetado
   const videoRef = useRef(null);
   const theme = useTheme();
 
@@ -31,6 +33,10 @@ const EventDetails = () => {
 
         const attendeesResponse = await axios.get(`/api/v1/events/${id}/attendances`);
         setAttendees(attendeesResponse.data.attendees);
+
+        // Obtener la lista de usuarios para etiquetar
+        const usersResponse = await axios.get('/api/v1/users'); // Ajusta la ruta de acuerdo a tu API
+        setUsers(usersResponse.data.users); // Ajusta según cómo venga la respuesta
       } catch (error) {
         console.error('Error fetching event details:', error);
       } finally {
@@ -82,11 +88,13 @@ const EventDetails = () => {
         file,  // Almacena el archivo real
         url: URL.createObjectURL(file),  // Para previsualizar la imagen
         type: file.type,
-        size: file.size
+        size: file.size,
+        taggedUser: selectedUser ? selectedUser.id : null // Añadir usuario etiquetado
       });
     }
   
     setNewImages(selectedImages);
+    setSelectedUser(null); // Limpiar la selección después de agregar
   };
 
   // Manejar la toma de fotos con la cámara
@@ -119,6 +127,7 @@ const EventDetails = () => {
                 url: imageUrl,
                 type: 'image/png',
                 size: blob.size,  // Tamaño de la imagen en bytes
+                taggedUser: selectedUser ? selectedUser.id : null // Añadir usuario etiquetado
               },
             ]);
           }
@@ -134,7 +143,6 @@ const EventDetails = () => {
       console.error('Error al acceder a la cámara:', error);
     }
   };
-  
 
   // Eliminar una imagen de la lista de nuevas imágenes
   const handleDeleteImage = (index) => {
@@ -153,6 +161,9 @@ const EventDetails = () => {
       newImages.forEach((image, index) => {
         if (image.file) {
           formData.append('images[]', image.file, `image_${index}.png`);
+          if (image.taggedUser) {
+            formData.append(`tagged_user_${index}`, image.taggedUser); // Enviar usuario etiquetado si existe
+          }
         }
       });
   
@@ -247,44 +258,69 @@ const EventDetails = () => {
         <Box sx={{ mt: 4, width: '100%', maxHeight: 300, overflowY: 'scroll' }}>
           <Typography variant="h6">Imágenes del Evento</Typography>
           <Grid container spacing={2} sx={{ mt: 2 }}>
-            {uploadedImages.length > 0 ? (
-            uploadedImages.map((image, index) => (
-          <Grid item xs={12} sm={4} key={index} sx={{ mb: 2 }}>
-              <img 
-                  src={image.url || image} 
-                  alt={`Imagen ${index + 1}`} 
-                  style={{ width: '100%', height: 'auto', borderRadius: '8px' }} 
-                />
+          {uploadedImages.length > 0 ? (
+  uploadedImages.map((image, index) => (
+    <Grid item xs={12} sm={4} key={index} sx={{ mb: 2 }}>
+      <img 
+        src={image.url || image} 
+        alt={`Imagen ${index + 1}`} 
+        style={{ width: '100%', height: 'auto', borderRadius: '8px' }} 
+      />
+
+      {/* Mostrar el usuario etiquetado si lo hay */}
+      {image.taggedUser && (
+        <Typography variant="caption" sx={{ color: 'white' }}>
+          Etiquetado: {users.find((user) => user.id === image.taggedUser)?.first_name} {users.find((user) => user.id === image.taggedUser)?.last_name}
+        </Typography>
+      )}
+    </Grid>
+  ))
+) : (
+  <Typography>No hay imágenes disponibles.</Typography>
+)}
           </Grid>
-      ))
-    ) : (
-      <Typography>No hay imágenes disponibles.</Typography>
-    )}
-  </Grid>
-</Box>
+        </Box>
 
         {/* Sección para imágenes nuevas seleccionadas pero aún no subidas */}
         <Box sx={{ mt: 4, width: '100%' }}>
           <Typography variant="h6">Imágenes seleccionadas para subir</Typography>
           <Grid container spacing={2} sx={{ mt: 2 }}>
-            {newImages.length > 0 ? (
-              newImages.map((image, index) => (
-                <Grid item xs={12} sm={4} key={index}>
-                  <Paper sx={{ p: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                    <img src={image.url} alt={`Selected ${index}`} style={{ width: '100%', height: 'auto', borderRadius: '8px' }} />
-                    <Typography variant="caption">Tipo: {image.type}</Typography>
-                    <Typography variant="caption">Tamaño: {(image.size / 1024).toFixed(2)} KB</Typography>
-                    <IconButton onClick={() => handleDeleteImage(index)} aria-label="delete" color="error">
-                      <DeleteIcon />
-                    </IconButton>
-                  </Paper>
-                </Grid>
-              ))
-            ) : (
-              <Typography></Typography>
-            )}
+          {newImages.length > 0 ? (
+  newImages.map((image, index) => (
+    <Grid item xs={12} sm={4} key={index}>
+      <Paper sx={{ p: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <img src={image.url} alt={`Selected ${index}`} style={{ width: '100%', height: 'auto', borderRadius: '8px' }} />
+        <Typography variant="caption" sx={{ color: 'white' }}>Tipo: {image.type}</Typography>
+        <Typography variant="caption">Tamaño: {(image.size / 1024).toFixed(2)} KB</Typography>
+
+        {/* Mostrar el usuario etiquetado si lo hay */}
+        {image.taggedUser && (
+          <Typography variant="caption" color="primary">
+            Etiquetado: {users.find((user) => user.id === image.taggedUser)?.first_name} {users.find((user) => user.id === image.taggedUser)?.last_name}
+          </Typography>
+        )}
+
+        <IconButton onClick={() => handleDeleteImage(index)} aria-label="delete" color="error">
+          <DeleteIcon />
+        </IconButton>
+      </Paper>
+    </Grid>
+  ))
+) : (
+  <Typography>No hay imágenes seleccionadas.</Typography>
+)}
           </Grid>
         </Box>
+
+        {/* Etiquetar a un usuario (opcional) */}
+        <Autocomplete
+          options={users}
+          getOptionLabel={(user) => `${user.first_name} ${user.last_name}`}
+          renderInput={(params) => <TextField {...params} label="Etiqueta a un usuario" variant="outlined" />}
+          value={selectedUser}
+          onChange={(event, newValue) => setSelectedUser(newValue)}
+          sx={{ width: '100%', maxWidth: 600, mt: 2 }}
+        />
 
         {/* Botones para subir y seleccionar imágenes */}
         <Button variant="contained" color="primary" onClick={handleUploadImages} sx={{ mt: 2 }}>
