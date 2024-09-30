@@ -94,13 +94,13 @@ const EventDetails = () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true });
       setIsTakingPhoto(true);
-      
+  
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         videoRef.current.play();
       }
   
-      setTimeout(() => {
+      setTimeout(async () => {
         const canvas = document.createElement('canvas');
         canvas.width = videoRef.current.videoWidth;
         canvas.height = videoRef.current.videoHeight;
@@ -108,10 +108,22 @@ const EventDetails = () => {
         const context = canvas.getContext('2d');
         context.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
   
-        const imageUrl = canvas.toDataURL('image/png');
+        // Convertir la imagen a un Blob
+        canvas.toBlob((blob) => {
+          if (blob) {
+            const imageUrl = URL.createObjectURL(blob);
+            setNewImages((prevImages) => [
+              ...prevImages,
+              {
+                file: blob,  // Almacena el archivo Blob
+                url: imageUrl,
+                type: 'image/png',
+                size: blob.size,  // Tamaño de la imagen en bytes
+              },
+            ]);
+          }
+        }, 'image/png');
   
-        setNewImages((prevImages) => [...prevImages, { url: imageUrl, type: 'image/png' }]);
-
         const tracks = stream.getTracks();
         tracks.forEach((track) => track.stop());
   
@@ -122,6 +134,7 @@ const EventDetails = () => {
       console.error('Error al acceder a la cámara:', error);
     }
   };
+  
 
   // Eliminar una imagen de la lista de nuevas imágenes
   const handleDeleteImage = (index) => {
