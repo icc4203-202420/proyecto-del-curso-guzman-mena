@@ -244,20 +244,24 @@ const EventDetails = () => {
         </Button>
 
         {/* Sección para las imágenes ya subidas */}
-        <Box sx={{ mt: 4, width: '100%' }}>
+        <Box sx={{ mt: 4, width: '100%', maxHeight: 300, overflowY: 'scroll' }}>
           <Typography variant="h6">Imágenes del Evento</Typography>
           <Grid container spacing={2} sx={{ mt: 2 }}>
             {uploadedImages.length > 0 ? (
-              uploadedImages.map((image, index) => (
-                <Grid item xs={12} sm={4} key={index}>
-                  <img src={image.url || image} alt={`Imagen ${index + 1}`} style={{ width: '100%', borderRadius: '8px' }} />
-                </Grid>
-              ))
-            ) : (
-              <Typography>No hay imágenes disponibles.</Typography>
-            )}
+            uploadedImages.map((image, index) => (
+          <Grid item xs={12} sm={4} key={index} sx={{ mb: 2 }}>
+              <img 
+                  src={image.url || image} 
+                  alt={`Imagen ${index + 1}`} 
+                  style={{ width: '100%', height: 'auto', borderRadius: '8px' }} 
+                />
           </Grid>
-        </Box>
+      ))
+    ) : (
+      <Typography>No hay imágenes disponibles.</Typography>
+    )}
+  </Grid>
+</Box>
 
         {/* Sección para imágenes nuevas seleccionadas pero aún no subidas */}
         <Box sx={{ mt: 4, width: '100%' }}>
