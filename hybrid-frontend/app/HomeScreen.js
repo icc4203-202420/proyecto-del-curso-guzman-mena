@@ -1,17 +1,28 @@
 import * as React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Button } from 'react-native-paper';
+import { Link } from 'expo-router';
 
 export default function HomeScreen() {
   return (
     <View style={styles.container}>
-      <Button mode="contained" onPress={() => alert('Cervezas')} style={styles.button}>
-        Cervezas
-      </Button>
-      <Button mode="contained" onPress={() => alert('Bares')} style={styles.button}>
+      <Link href="/beer" asChild>
+        <Button mode="contained" style={styles.button}>
+          Cervezas
+        </Button>
+      </Link>
+      <Button 
+        mode="contained" 
+        onPress={() => alert('Bares')} 
+        style={styles.button}
+      >
         Bares
       </Button>
-      <Button mode="contained" onPress={() => alert('Eventos')} style={styles.button}>
+      <Button 
+        mode="contained" 
+        onPress={() => alert('Eventos')} 
+        style={styles.button}
+      >
         Eventos
       </Button>
     </View>
