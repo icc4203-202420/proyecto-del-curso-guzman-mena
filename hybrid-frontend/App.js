@@ -102,8 +102,8 @@ export default function App() {
     <PaperProvider>
       <NavigationContainer>
         <Stack.Navigator screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="Login" component={LoginScreen} />
-          <Stack.Screen name="Main" component={TabNavigator} />
+          <Stack.Screen name="LoginScreen" component={LoginScreen} />
+          <Stack.Screen name="MainIndex" component={TabNavigator} />
         </Stack.Navigator>
       </NavigationContainer>
     </PaperProvider>
