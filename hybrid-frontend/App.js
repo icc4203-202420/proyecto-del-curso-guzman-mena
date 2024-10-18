@@ -15,6 +15,7 @@ import BarsIndex from './app/bars/index';
 import BarsShow from './app/bars/show';
 import EventsIndex from './app/events/index';
 import EventsShow from './app/events/show';
+import LoginScreen from './app/loginScreen';
 
 // Crea los navegadores
 const Stack = createStackNavigator();
