@@ -16,6 +16,8 @@
     "@react-navigation/bottom-tabs": "^6.6.1",
     "@react-navigation/native": "^6.1.18",
     "@react-navigation/stack": "^6.4.1",
+    "@react-navigation/web": "^1.0.0-alpha.9",
+    "axios": "^1.7.7",
     "expo": "~51.0.35",
     "expo-constants": "~16.0.1",
     "expo-linking": "~6.3.1",
