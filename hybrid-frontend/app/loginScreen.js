@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { TextField, Button, Alert, Card, CardContent, Typography } from '@mui/material';
 import axios from 'axios';
+import { useNavigation } from '@react-navigation/native';
 
 export default function LoginScreen() {
+  const navigation = useNavigation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -37,7 +39,8 @@ export default function LoginScreen() {
       if (response.data.status.code === 200) {
         setMessage('You have logged in successfully');
         setMessageType('success');
-        // Aquí navegas a la pantalla principal
+        navigation.navigate('index');
+        //////////
       } else {
         setMessage(response.data.status.message || 'Invalid credentials');
         setMessageType('error');

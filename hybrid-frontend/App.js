@@ -4,6 +4,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Provider as PaperProvider } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import 'react-native-gesture-handler';
 
 // Importa las pantallas
 import MainIndex from './app/index';
@@ -17,18 +18,16 @@ import EventsIndex from './app/events/index';
 import EventsShow from './app/events/show';
 import LoginScreen from './app/loginScreen';
 
-// Crea los navegadores
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
-// Navegador principal con Stack
 function MainStack() {
   return (
     <Stack.Navigator>
       <Stack.Screen 
         name="Main" 
         component={MainIndex} 
-        options={{ title: 'Inicio' }} // Opciones personalizadas
+        options={{ title: 'Inicio' }}
       />
       <Stack.Screen 
         name="Beers" 
@@ -64,7 +63,6 @@ function MainStack() {
   );
 }
 
-// Navegador de pestañas
 function TabNavigator() {
   return (
     <Tab.Navigator>
@@ -99,12 +97,14 @@ function TabNavigator() {
   );
 }
 
-// Componente principal de la app
 export default function App() {
   return (
     <PaperProvider>
       <NavigationContainer>
-        <TabNavigator />
+        <Stack.Navigator screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="Login" component={LoginScreen} />
+          <Stack.Screen name="Main" component={TabNavigator} />
+        </Stack.Navigator>
       </NavigationContainer>
     </PaperProvider>
   );
