@@ -1,127 +1,105 @@
 import React, { useState } from 'react';
-import { View, Alert, StyleSheet } from 'react-native';
-import { Input, Button, Text } from 'react-native-elements';
+import { TextField, Button, Alert, Card, CardContent, Typography } from '@mui/material';
 import axios from 'axios';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState(''); // Estado para mostrar mensajes
+  const [messageType, setMessageType] = useState(''); // 'success' o 'error'
 
   // Validación del formulario
   const validateForm = () => {
-    console.log('Validating form');
     if (!email || !password) {
-      console.log('Validation failed: Missing fields');
-      Alert.alert('Error', 'Please fill in all fields');
+      setMessage('Please fill in all fields');
+      setMessageType('error');
       return false;
     }
     if (!/\S+@\S+\.\S+/.test(email)) {
-      console.log('Validation failed: Invalid email format');
-      Alert.alert('Error', 'Please enter a valid email address');
+      setMessage('Please enter a valid email address');
+      setMessageType('error');
       return false;
     }
-    console.log('Validation passed');
     return true;
   };
 
   // Función para manejar el login
   const handleLogin = async () => {
-    console.log('Login button pressed');
-
-    // Validamos el formulario
-    if (!validateForm()) {
-      console.log('Form validation failed, stopping login');
-      return;
-    }
+    if (!validateForm()) return;
 
     setLoading(true);
-    console.log('Starting login request, loading set to true');
-
     try {
-      // Llamada a la API para hacer login
-      console.log('Sending login request to the API');
       const response = await axios.post('http://127.0.0.1:3001/api/v1/login', {
         user: { email, password },
       });
 
-      console.log('Response received:', response.data);
-
       if (response.data.status.code === 200) {
-        console.log('Login successful');
-        Alert.alert('Success', 'You have logged in successfully.');
-        // Aquí navegarías a la pantalla principal, si fuera necesario
-        // navigation.navigate('Home');
+        setMessage('You have logged in successfully');
+        setMessageType('success');
+        // Aquí navegas a la pantalla principal
       } else {
-        console.log('Login failed: Invalid credentials');
-        Alert.alert('Login Failed', response.data.status.message);
+        setMessage(response.data.status.message || 'Invalid credentials');
+        setMessageType('error');
       }
     } catch (error) {
-      // Capturamos errores en la solicitud o en la API
-      console.log('Error during login request:', error);
       if (axios.isAxiosError(error) && error.response) {
-        console.log('Error response from API:', error.response.data);
-        Alert.alert('Login Failed', error.response.data.error || 'Invalid credentials');
+        setMessage(error.response.data.error || 'Invalid credentials');
       } else {
-        console.log('Unexpected error occurred');
-        Alert.alert('Error', 'An unexpected error occurred. Please try again.');
+        setMessage('An unexpected error occurred. Please try again.');
       }
+      setMessageType('error');
     } finally {
       setLoading(false);
-      console.log('Login request finished, loading set to false');
     }
   };
 
   return (
-    <View style={styles.container}>
-      <Text h3 style={styles.title}>Login</Text>
+    <Card style={{ maxWidth: 400, margin: 'auto', padding: '20px 5px' }}>
+      <CardContent>
+        <Typography variant="h5" gutterBottom>
+          Login
+        </Typography>
 
-      <Input
-        placeholder="Email"
-        leftIcon={{ type: 'font-awesome', name: 'envelope' }}
-        onChangeText={(value) => {
-          setEmail(value);
-          console.log('Email input changed:', value);
-        }}
-        value={email}
-        autoCapitalize="none"
-        keyboardType="email-address"
-      />
+        {/* Mostrar mensaje de éxito o error */}
+        {message && (
+          <Alert severity={messageType} style={{ marginBottom: '20px' }}>
+            {message}
+          </Alert>
+        )}
 
-      <Input
-        placeholder="Password"
-        leftIcon={{ type: 'font-awesome', name: 'lock' }}
-        onChangeText={(value) => {
-          setPassword(value);
-          console.log('Password input changed:', value);
-        }}
-        value={password}
-        secureTextEntry
-        autoCapitalize="none"
-      />
+        {/* Campos de formulario */}
+        <TextField
+          label="Email"
+          variant="outlined"
+          fullWidth
+          margin="normal"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          autoComplete="email"
+        />
+        <TextField
+          label="Password"
+          type="password"
+          variant="outlined"
+          fullWidth
+          margin="normal"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
 
-      <Button
-        title="Login"
-        onPress={handleLogin}
-        loading={loading}
-        containerStyle={styles.buttonContainer}
-      />
-    </View>
+        {/* Botón de Login */}
+        <Button
+          variant="contained"
+          color="primary"
+          fullWidth
+          onClick={handleLogin}
+          disabled={loading}
+          style={{ marginTop: '20px' }}
+        >
+          {loading ? 'Logging in...' : 'Login'}
+        </Button>
+      </CardContent>
+    </Card>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    padding: 20,
-    backgroundColor: '#f5f5f5',
-  },
-  title: {
-    textAlign: 'center',
-    marginBottom: 30,
-  },
-  buttonContainer: {
-    marginTop: 20,
-  },
-});
