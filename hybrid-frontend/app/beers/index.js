@@ -2,8 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { View, FlatList, StyleSheet, Text, ActivityIndicator } from 'react-native';  
 import { Searchbar, List, Button } from 'react-native-paper';
 import axios from 'axios';
+import {useRouter } from 'expo-router'
+
 
 export default function BeersIndex({ navigation }) {
+  const router = useRouter()
   const [searchQuery, setSearchQuery] = useState('');
   const [beers, setBeers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -49,7 +52,7 @@ export default function BeersIndex({ navigation }) {
       {/* Botón temporal para acceder directamente al detalle de una cerveza */}
       <Button
         mode="contained"
-        onPress={() => navigation.navigate('BeersShow', { id: 10 })}  // Simula la navegación manualmente
+        onPress={() => router.push(`/beers/${id}`)}  // Simula la navegación manualmente
         style={styles.tempButton}
       >
         Ver Cerveza con ID 10
@@ -62,7 +65,7 @@ export default function BeersIndex({ navigation }) {
           <List.Item
             title={item.name}
             description={`Estilo: ${item.style || 'Desconocido'}`}  
-            onPress={() => navigation.navigate('BeersShow', { id: item.id })}
+            onPress={() => router.push(`/beers/${item.id}`)}
             left={props => <List.Icon {...props} icon="beer" />}
           />
         )}
