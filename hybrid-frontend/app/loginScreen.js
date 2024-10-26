@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { TextField, Button, Alert, Card, CardContent, Typography } from '@mui/material';
 import axios from 'axios';
 import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 export default function LoginScreen() {
   const navigation = useNavigation();
@@ -37,6 +39,8 @@ export default function LoginScreen() {
       });
 
       if (response.data.status.code === 200) {
+        const currentUser = response.data.status.data.user.id;
+        await AsyncStorage.setItem('@user_id', currentUser.toString());
         setMessage('You have logged in successfully');
         setMessageType('success');
         navigation.navigate('index');

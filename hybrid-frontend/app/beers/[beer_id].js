@@ -3,11 +3,11 @@ import { View, StyleSheet, ActivityIndicator, TextInput } from 'react-native';
 import { Text, Card, Title, Paragraph, Button } from 'react-native-paper';
 import axios from 'axios';
 import { useLocalSearchParams } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function BeersShow() {
-//   const id = 1;  // ID fijo para la cerveza Sapporo Premium
   const { beer_id } = useLocalSearchParams()
-  const userId = 1;  // ID fijo del usuario
+  const [userId, setUserId] = useState(null); // Inicializar como null
   const [beer, setBeer] = useState(null);  // Estado para almacenar los detalles de la cerveza
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -15,6 +15,17 @@ export default function BeersShow() {
   const [newRating, setNewRating] = useState('');  // Rating de la nueva reseña
   const [reviewError, setReviewError] = useState('');  // Mensaje de error para la reseña
   const [successMessage, setSuccessMessage] = useState(''); // Mensaje de éxito al agregar reseña
+
+
+    // Cargar el user_id desde AsyncStorage
+    useEffect(() => {
+      const fetchUserId = async () => {
+        const storedUserId = await AsyncStorage.getItem('@user_id');
+        setUserId(storedUserId);
+      };
+  
+      fetchUserId();
+    }, []);
 
   // Realizar la solicitud para obtener los detalles de la cerveza
   useEffect(() => {
@@ -33,7 +44,12 @@ export default function BeersShow() {
   }, [beer_id]);
 
   const handleSubmitReview = async () => {
-    // Validar que la reseña tenga al menos 15 palabras
+    if (!userId) {
+      // Mostrar alerta si el usuario no está logueado
+      Alert.alert("Iniciar sesión", "Debes iniciar sesión para agregar una reseña.");
+      return;
+    }
+
     const wordCount = newReview.trim().split(/\s+/).length;
     if (wordCount < 15) {
       setReviewError('La reseña debe contener al menos 15 palabras.');
@@ -53,7 +69,7 @@ export default function BeersShow() {
         review: {
           text: newReview,
           rating: rating,
-          user_id: userId,  // Agregar user_id aquí
+          user_id: userId,  
         }
       });
       setSuccessMessage('Reseña agregada exitosamente.');
@@ -77,7 +93,7 @@ export default function BeersShow() {
   if (!beer) {
     return <Text>Cerveza no encontrada</Text>;  // Mostrar mensaje si no se encuentra la cerveza
   }
-
+  
   return (
     <View style={styles.container}>
       <Card>
@@ -123,7 +139,7 @@ export default function BeersShow() {
           {beer.reviews && beer.reviews.length > 0 ? (
             beer.reviews.map((review, index) => (
               <Paragraph key={index}>
-                {review.text} - Calificación: {review.rating}
+                {review.text} - Calificación: {review.rating} - Usuario: {review.user_first_name}
               </Paragraph>
             ))
           ) : (

@@ -24,7 +24,16 @@ class API::V1::BeersController < ApplicationController
     if @beer
       brewery = @beer.brand.brewery if @beer.brand
       bars = @beer.bars
-      reviews = @beer.reviews
+      # reviews = @beer.reviews
+      reviews = @beer.reviews.includes(:user)
+
+      formatted_reviews = reviews.map do |review|
+        {
+          rating: review.rating,
+          text: review.text,
+          user_first_name: review.user.first_name # Cambiar a user_first_name
+        }
+      end
   
       render json: {
         beer: @beer.as_json(
@@ -32,13 +41,28 @@ class API::V1::BeersController < ApplicationController
         ).merge({
           brewery: brewery.as_json,
           bars: bars.as_json,
-          reviews: reviews.as_json(only: [:rating, :text])
+          reviews: formatted_reviews # Usar las reseñas formateadas
         })
       }, status: :ok
     else
       render json: { error: 'Beer not found' }, status: :not_found
     end
   end
+
+  
+  #     render json: {
+  #       beer: @beer.as_json(
+  #         only: [:name, :style, :hop, :yeast, :malts, :ibu, :alcohol, :blg, :description, :avg_rating]
+  #       ).merge({
+  #         brewery: brewery.as_json,
+  #         bars: bars.as_json,
+  #         reviews: reviews.as_json(only: [:rating, :text, :user_id])
+  #       })
+  #     }, status: :ok
+  #   else
+  #     render json: { error: 'Beer not found' }, status: :not_found
+  #   end
+  # end
 
   # POST /beers
   def create

@@ -18,12 +18,6 @@ export default function MainIndex() {
       <Button mode="contained" onPress={() => router.push('/beers')}>
         Cervezas
       </Button>
-      {/* <Button mode="contained" onPress={() => navigation.navigate('Bars')}>
-        Bares
-      </Button>
-      <Button mode="contained" onPress={() => navigation.navigate('Events')}>
-        Eventos
-      </Button> */}
     </View>
   );
 }
