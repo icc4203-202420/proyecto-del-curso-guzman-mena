@@ -4,6 +4,7 @@ import { Button } from 'react-native-paper';
 // import { useNavigation } from '@react-navigation/native'; // Importa el hook
 import {useRouter } from 'expo-router'
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { MaterialIcons } from '@expo/vector-icons';
 
 
 // El componente funcional MainIndex
@@ -17,8 +18,9 @@ export default function MainIndex() {
       console.log('user_id borrado exitosamente');
     } catch (error) {
       console.error('Error al borrar user_id:', error);
+    }
   }
-}
+
 
   return (
     <View style={styles.container}>

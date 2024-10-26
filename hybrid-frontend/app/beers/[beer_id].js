@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, ActivityIndicator, TextInput } from 'react-native';
+import { View, StyleSheet, ActivityIndicator, TextInput, Alert } from 'react-native';
 import { Text, Card, Title, Paragraph, Button } from 'react-native-paper';
 import axios from 'axios';
 import { useLocalSearchParams } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 export default function BeersShow() {
   const { beer_id } = useLocalSearchParams()
