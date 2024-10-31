@@ -1,39 +1,35 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, ActivityIndicator, TextInput, Alert } from 'react-native';
+import { View, StyleSheet, ActivityIndicator, TextInput, Alert, ScrollView } from 'react-native';
 import { Text, Card, Title, Paragraph, Button } from 'react-native-paper';
 import axios from 'axios';
 import { useLocalSearchParams } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-
 export default function BeersShow() {
-  const { beer_id } = useLocalSearchParams()
-  const [userId, setUserId] = useState(null); // Inicializar como null
-  const [beer, setBeer] = useState(null);  // Estado para almacenar los detalles de la cerveza
+  const { beer_id } = useLocalSearchParams();
+  const [userId, setUserId] = useState(null);
+  const [beer, setBeer] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [newReview, setNewReview] = useState('');  // Texto de la nueva reseña
-  const [newRating, setNewRating] = useState('');  // Rating de la nueva reseña
-  const [reviewError, setReviewError] = useState('');  // Mensaje de error para la reseña
-  const [successMessage, setSuccessMessage] = useState(''); // Mensaje de éxito al agregar reseña
+  const [newReview, setNewReview] = useState('');
+  const [newRating, setNewRating] = useState('');
+  const [reviewError, setReviewError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
 
+  useEffect(() => {
+    const fetchUserId = async () => {
+      const storedUserId = await AsyncStorage.getItem('@user_id');
+      setUserId(storedUserId);
+    };
 
-    // Cargar el user_id desde AsyncStorage
-    useEffect(() => {
-      const fetchUserId = async () => {
-        const storedUserId = await AsyncStorage.getItem('@user_id');
-        setUserId(storedUserId);
-      };
-  
-      fetchUserId();
-    }, []);
+    fetchUserId();
+  }, []);
 
-  // Realizar la solicitud para obtener los detalles de la cerveza
   useEffect(() => {
     const fetchBeerDetails = async () => {
       try {
         const response = await axios.get(`http://127.0.0.1:3001/api/v1/beers/${beer_id}`);
-        setBeer(response.data.beer || response.data);  // Ajustar según la estructura de la respuesta
+        setBeer(response.data.beer || response.data);
         setLoading(false);
       } catch (error) {
         console.error('Error fetching beer details:', error);
@@ -46,7 +42,6 @@ export default function BeersShow() {
 
   const handleSubmitReview = async () => {
     if (!userId) {
-      // Mostrar alerta si el usuario no está logueado
       Alert.alert("Iniciar sesión", "Debes iniciar sesión para agregar una reseña.");
       return;
     }
@@ -57,7 +52,6 @@ export default function BeersShow() {
       return;
     }
 
-    // Validar que el rating sea un número entre 0 y 5 con decimales
     const rating = parseFloat(newRating);
     if (isNaN(rating) || rating < 0 || rating > 5) {
       setReviewError('El rating debe ser un número entre 0 y 5.');
@@ -65,18 +59,17 @@ export default function BeersShow() {
     }
 
     try {
-      // Enviar la reseña al backend con user_id fijo en 1
       await axios.post(`http://127.0.0.1:3001/api/v1/beers/${beer_id}/reviews`, {
         review: {
           text: newReview,
           rating: rating,
-          user_id: userId,  
+          user_id: userId,
         }
       });
       setSuccessMessage('Reseña agregada exitosamente.');
-      setNewReview('');  // Limpiar el campo de reseña
-      setNewRating('');  // Limpiar el campo de rating
-      setReviewError('');  // Limpiar el mensaje de error
+      setNewReview('');
+      setNewRating('');
+      setReviewError('');
     } catch (error) {
       setReviewError('Error al enviar la reseña.');
       console.error('Error submitting review:', error);
@@ -84,19 +77,19 @@ export default function BeersShow() {
   };
 
   if (loading) {
-    return <ActivityIndicator size="large" color="#0000ff" />;  // Indicador de carga mientras se obtienen los detalles
+    return <ActivityIndicator size="large" color="#0000ff" />;
   }
 
   if (error) {
-    return <Text>{error}</Text>;  // Mostrar error si ocurrió un problema
+    return <Text>{error}</Text>;
   }
 
   if (!beer) {
-    return <Text>Cerveza no encontrada</Text>;  // Mostrar mensaje si no se encuentra la cerveza
+    return <Text>Cerveza no encontrada</Text>;
   }
   
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       <Card>
         <Card.Content>
           <Title>{beer.name}</Title>
@@ -108,7 +101,6 @@ export default function BeersShow() {
           <Paragraph>Alcohol: {beer.alcohol}</Paragraph>
           <Paragraph>BLG: {beer.blg}</Paragraph>
           <Paragraph>Rating Promedio: {beer.avg_rating}</Paragraph>
-          {/* Mostrar la cervecería */}
           {beer.brewery && (
             <Paragraph>
               Cervecería: {beer.brewery.name} (Establecida en {beer.brewery.estdate})
@@ -117,7 +109,6 @@ export default function BeersShow() {
         </Card.Content>
       </Card>
 
-      {/* Mostrar los bares donde se sirve la cerveza */}
       <Card style={styles.card}>
         <Card.Content>
           <Title>Bares que sirven esta cerveza</Title>
@@ -133,7 +124,6 @@ export default function BeersShow() {
         </Card.Content>
       </Card>
 
-      {/* Mostrar las reseñas existentes */}
       <Card style={styles.card}>
         <Card.Content>
           <Title>Reseñas</Title>
@@ -149,7 +139,6 @@ export default function BeersShow() {
         </Card.Content>
       </Card>
 
-      {/* Formulario para agregar una nueva reseña */}
       <Card style={styles.card}>
         <Card.Content>
           <Title>Agregar Reseña</Title>
@@ -178,7 +167,7 @@ export default function BeersShow() {
           </Button>
         </Card.Content>
       </Card>
-    </View>
+    </ScrollView>
   );
 }
 
