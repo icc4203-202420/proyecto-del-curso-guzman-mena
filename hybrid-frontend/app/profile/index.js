@@ -1,10 +1,15 @@
 import { View, StyleSheet, ScrollView } from 'react-native';
-import { Text, Avatar, List } from 'react-native-paper';
+import { Text, Avatar, List, Button } from 'react-native-paper';
 import React, { useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage'; 
 import { useFocusEffect } from '@react-navigation/native';
+import {useRouter } from 'expo-router'
+
 
 export default function ProfileIndex() {
+
+  const router = useRouter()
+
   const [user, setUser] = useState({
     name: '',
     email: '',
@@ -64,7 +69,12 @@ export default function ProfileIndex() {
         {user.reviews.length > 0 ? (
           user.reviews.map((review, index) => (
             <View key={index} style={styles.reviewCard}>
-              <Text style={styles.reviewTitle}>{`Reseña ${review.id}`}</Text>
+              <Text style={styles.reviewTitle}>{`Reseña para: ${review.beer.name}`}</Text>
+              <Button 
+                mode="contained" 
+                  onPress={() => router.push(`/beers/${review.beer_id}`)} style={styles.button}>
+                  View Beer
+              </Button>
               <Text style={styles.reviewRating}>{`Calificación: ${review.rating}`}</Text>
               <Text style={styles.reviewContent}>{review.text}</Text>
               
@@ -75,6 +85,8 @@ export default function ProfileIndex() {
         )}
         </ScrollView>
       </View>
+
+      
 
 
 
@@ -173,6 +185,13 @@ const styles = StyleSheet.create({
   reviewContent: {
     fontSize: 14,
     color: '#333',
+  },
+  button: {
+    paddingVertical: 0.3, // Ajusta el padding vertical
+    paddingHorizontal: 0.2, // Ajusta el padding horizontal
+    width: 200, // Ancho del botón
+    alignSelf: 'flex-start', // Alinea el botón a la izquierda
+    marginVertical: 3, // Espaciado vertical
   },
 
 });

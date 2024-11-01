@@ -49,15 +49,6 @@ export default function BeersIndex({ navigation }) {
         value={searchQuery}
       />
 
-      {/* Botón temporal para acceder directamente al detalle de una cerveza */}
-      <Button
-        mode="contained"
-        onPress={() => router.push(`/beers/${id}`)}  // Simula la navegación manualmente
-        style={styles.tempButton}
-      >
-        Ver Cerveza con ID 10
-      </Button>
-
       <FlatList
         data={beers}
         keyExtractor={item => item.id.toString()} 
