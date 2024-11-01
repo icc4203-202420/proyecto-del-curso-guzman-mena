@@ -8,7 +8,12 @@ class API::V1::UsersController < ApplicationController
   end
 
   def show
-  
+
+    render json: @user.to_json(include: { 
+      reviews: { only: [:id, :text, :rating, :beer_id] },
+      address: { only: [:line1, :line2, :city, :country] } 
+      }),
+      status: :ok
   end
 
   def create

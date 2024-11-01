@@ -1,53 +1,119 @@
-
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, ScrollView } from 'react-native';
 import { Text, Avatar, List } from 'react-native-paper';
 import React, { useState, useEffect } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage'; // Asegúrate de que esta línea esté presente
+import AsyncStorage from '@react-native-async-storage/async-storage'; 
+import { useFocusEffect } from '@react-navigation/native';
 
 export default function ProfileIndex() {
+  const [user, setUser] = useState({
+    name: '',
+    email: '',
+    age: '',
+    reviews: [],
+    friends: [],
+    eventAtendances: [],
+  });
 
-
-  const [userId, setUserId] = useState(null);
-
-
-  const user = {
-    name:  userId ? userId : "Usuario",
-    email: 'juan@example.com',
-    favoriteBeers: ['IPA', 'Stout', 'Lager'],
-    favoriteBars: ['Bar A', 'Bar B', 'Bar C'],
+  const fetchUserData = async () => {
+    try {
+      const storedUserId = await AsyncStorage.getItem('@user_id');
+      
+      if (storedUserId) {
+        const response = await fetch(`http://localhost:3001/api/v1/users/${storedUserId}`);
+        if (response.ok) {
+          const data = await response.json();
+          setUser({
+            name: capitalizeFirstLetter(data.first_name) + " " + capitalizeFirstLetter(data.last_name),
+            email: data.email,
+            age: data.age,
+            reviews: data.reviews || [],
+          });
+        } else {
+          console.error('Error al obtener datos del usuario:', response.status);
+        }
+      }
+    } catch (error) {
+      console.error('Error en la solicitud de datos del usuario:', error);
+    }
   };
 
-  useEffect(() => {
-    const fetchUserId = async () => {
-      const storedUserId = await AsyncStorage.getItem('@user_id');
-      setUserId(storedUserId);
-    };
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchUserData();
+    }, [])
+  );
 
-    fetchUserId();
-  }, []);
-
+  function capitalizeFirstLetter(str) {
+    if (str.length === 0) return str;
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  }
+// visualisacion de la vista
   return (
     <View style={styles.container}>
+      {/* Datos personales */}
       <View style={styles.header}>
         <Avatar.Text size={80} label={user.name[0]} />
         <Text style={styles.name}>{user.name}</Text>
         <Text style={styles.email}>{user.email}</Text>
       </View>
-      <List.Section>
-        <List.Subheader>Cervezas favoritas</List.Subheader>
-        {user.favoriteBeers.map((beer, index) => (
+
+
+      <View style={styles.card}>
+        <Text style={styles.title}>Review</Text>
+        <ScrollView contentContainerStyle={styles.scrollContainer}>
+        {user.reviews.length > 0 ? (
+          user.reviews.map((review, index) => (
+            <View key={index} style={styles.reviewCard}>
+              <Text style={styles.reviewTitle}>{`Reseña ${review.id}`}</Text>
+              <Text style={styles.reviewRating}>{`Calificación: ${review.rating}`}</Text>
+              <Text style={styles.reviewContent}>{review.text}</Text>
+              
+            </View>
+          ))
+        ) : (
+          <Text>No hay reseñas disponibles.</Text> // Mensaje cuando no hay reseñas
+        )}
+        </ScrollView>
+      </View>
+
+
+
+
+
+      {/* Interaccion con la APP */}
+      {/* Eventos asisistidos o por asistir */}
+      {/* <List.Section>
+        <List.Subheader>Event Atendances</List.Subheader>
+        {user.eventAtendances.map((event, index) => ( 
           <List.Item key={index} title={beer} left={() => <List.Icon icon="beer" />} />
         ))}
-      </List.Section>
-      <List.Section>
-        <List.Subheader>Bares favoritos</List.Subheader>
+      </List.Section> */}
+
+      
+
+
+      {/* Reseñas en la APP*/}
+      {/* <List.Section>
+        <List.Subheader>Review</List.Subheader>
+        {user.favoriteBeers.map((review, index) => (
+          <List.Item key={index} title={beer} left={() => <List.Icon icon="beer" />} />
+        ))}
+      </List.Section> */}
+
+      {/* Amigos */}
+
+      {/* <List.Section>
+        <List.Subheader>friends</List.Subheader>
         {user.favoriteBars.map((bar, index) => (
           <List.Item key={index} title={bar} left={() => <List.Icon icon="glass-mug-variant" />} />
         ))}
-      </List.Section>
+      </List.Section> */}
     </View>
   );
 }
+
+// Estilos Frontend
+
 
 const styles = StyleSheet.create({
   container: {
@@ -67,4 +133,46 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#666',
   },
+
+
+  title: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  content: {
+    fontSize: 14,
+    color: '#333',
+  },
+
+  card: {
+    backgroundColor: '#fff',  // Fondo blanco
+    padding: 20,              // Espaciado interno
+    borderRadius: 10,         // Bordes redondeados
+    shadowColor: '#000',      // Color de la sombra
+    shadowOffset: { width: 0, height: 2 },  // Desplazamiento de la sombra
+    shadowOpacity: 0.2,       // Opacidad de la sombra
+    shadowRadius: 5,          // Difusión de la sombra
+    elevation: 3,             // Sombra para Android
+    marginVertical: 10,       // Separación entre tarjetas
+    maxHeight: 200,
+  },
+  scrollContainer: {
+    maxHeight: '100%', // Para permitir el desplazamiento dentro de la tarjeta
+  },
+
+  reviewCard: {
+    backgroundColor: '#f0f0f0',
+    padding: 10,
+    borderRadius: 8,
+    marginVertical: 5,
+  },
+  reviewTitle: {
+    fontWeight: 'bold',
+  },
+  reviewContent: {
+    fontSize: 14,
+    color: '#333',
+  },
+
 });
