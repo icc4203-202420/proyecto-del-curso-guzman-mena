@@ -1,15 +1,30 @@
-import React from 'react';
+
 import { View, StyleSheet } from 'react-native';
 import { Text, Avatar, List } from 'react-native-paper';
+import React, { useState, useEffect } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage'; // Asegúrate de que esta línea esté presente
 
 export default function ProfileIndex() {
-  // Ejemplo de datos de usuario
+
+
+  const [userId, setUserId] = useState(null);
+
+
   const user = {
-    name: 'Juan Pérez',
+    name:  userId ? userId : "Usuario",
     email: 'juan@example.com',
     favoriteBeers: ['IPA', 'Stout', 'Lager'],
     favoriteBars: ['Bar A', 'Bar B', 'Bar C'],
   };
+
+  useEffect(() => {
+    const fetchUserId = async () => {
+      const storedUserId = await AsyncStorage.getItem('@user_id');
+      setUserId(storedUserId);
+    };
+
+    fetchUserId();
+  }, []);
 
   return (
     <View style={styles.container}>
