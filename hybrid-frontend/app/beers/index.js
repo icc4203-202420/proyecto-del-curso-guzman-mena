@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, FlatList, StyleSheet, Text, ActivityIndicator } from 'react-native';  
-import { Searchbar, List, Button } from 'react-native-paper';
+import { Searchbar, List } from 'react-native-paper';
 import axios from 'axios';
 import {useRouter } from 'expo-router'
 
@@ -75,8 +75,5 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  tempButton: {
-    marginVertical: 20,
   },
 });

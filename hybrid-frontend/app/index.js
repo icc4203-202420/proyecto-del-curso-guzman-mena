@@ -27,8 +27,14 @@ export default function MainIndex() {
       <Button mode="contained" onPress={() => router.push('/loginScreen')}>
         Login
       </Button>
+      <Button mode="contained" onPress={() => router.push('/profile')}>
+        Perfil
+      </Button>
       <Button mode="contained" onPress={() => router.push('/beers')}>
         Cervezas
+      </Button>
+      <Button mode="contained" onPress={() => router.push('/bars')}>
+        Bares
       </Button>
       <Button mode="contained" onPress={handleLogout}>
         Logout

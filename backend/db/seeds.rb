@@ -56,10 +56,12 @@ if Rails.env.development?
     bar.beers << Beer.all.sample(rand(1..3))
   end
 
-  # Crear eventos asociados a los bares
-  events = bars.map do |bar|
-    FactoryBot.create(:event, bar: bar)
-  end
+    # Crear dos eventos asociados a cada bar con nombres únicos
+    events = bars.flat_map do |bar|
+      Array.new(2) do |i|
+        FactoryBot.create(:event, bar: bar, name: "Evento #{i + 1} en #{bar.name}")
+      end
+    end
 
   # Crear relaciones de amistad entre usuarios
   users.combination(2).to_a.sample(5).each do |user_pair|
@@ -68,7 +70,7 @@ if Rails.env.development?
 
   # Crear attendances (asistencia) de usuarios a eventos
   users.each do |user|
-    events.sample(rand(1..3)).each do |event|
+    events.sample(rand(3..5)).each do |event|
       FactoryBot.create(:attendance, user: user, event: event, checked_in: [true, false].sample)
     end
   end
