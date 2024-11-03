@@ -1,19 +1,17 @@
 import React, { useState } from 'react';
-import { TextField, Button, Alert, Card, CardContent, Typography } from '@mui/material';
+import { Text, View, TextInput, Button, ActivityIndicator, StyleSheet } from 'react-native';
 import axios from 'axios';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
 
 export default function LoginScreen() {
   const navigation = useNavigation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState(''); // Estado para mostrar mensajes
-  const [messageType, setMessageType] = useState(''); // 'success' o 'error'
+  const [message, setMessage] = useState('');
+  const [messageType, setMessageType] = useState('');
 
-  // Validación del formulario
   const validateForm = () => {
     if (!email || !password) {
       setMessage('Please fill in all fields');
@@ -28,7 +26,6 @@ export default function LoginScreen() {
     return true;
   };
 
-  // Función para manejar el login
   const handleLogin = async () => {
     if (!validateForm()) return;
 
@@ -44,17 +41,16 @@ export default function LoginScreen() {
         setMessage('You have logged in successfully');
         setMessageType('success');
         navigation.navigate('index');
-        //////////
       } else {
         setMessage(response.data.status.message || 'Invalid credentials');
         setMessageType('error');
       }
     } catch (error) {
-      if (axios.isAxiosError(error) && error.response) {
-        setMessage(error.response.data.error || 'Invalid credentials');
-      } else {
-        setMessage('An unexpected error occurred. Please try again.');
-      }
+      setMessage(
+        axios.isAxiosError(error) && error.response
+          ? error.response.data.error || 'Invalid credentials'
+          : 'An unexpected error occurred. Please try again.'
+      );
       setMessageType('error');
     } finally {
       setLoading(false);
@@ -62,52 +58,63 @@ export default function LoginScreen() {
   };
 
   return (
-    
-    <Card style={{ maxWidth: 400, margin: 'auto', padding: '20px 5px' }}>
-      <CardContent>
-        <Typography variant="h5" gutterBottom>
-          Login
-        </Typography>
+    <View style={styles.container}>
+      <Text style={styles.title}>Login</Text>
 
-        {/* Mostrar mensaje de éxito o error */}
-        {message && (
-          <Alert severity={messageType} style={{ marginBottom: '20px' }}>
-            {message}
-          </Alert>
-        )}
+      {message && (
+        <Text style={[styles.message, messageType === 'error' ? styles.error : styles.success]}>
+          {message}
+        </Text>
+      )}
 
-        {/* Campos de formulario */}
-        <TextField
-          label="Email"
-          variant="outlined"
-          fullWidth
-          margin="normal"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          autoComplete="email"
-        />
-        <TextField
-          label="Password"
-          type="password"
-          variant="outlined"
-          fullWidth
-          margin="normal"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
+      <TextInput
+        style={styles.input}
+        placeholder="Email"
+        value={email}
+        onChangeText={setEmail}
+        autoCapitalize="none"
+        keyboardType="email-address"
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="Password"
+        value={password}
+        onChangeText={setPassword}
+        secureTextEntry
+      />
 
-        {/* Botón de Login */}
-        <Button
-          variant="contained"
-          color="primary"
-          fullWidth
-          onClick={handleLogin}
-          disabled={loading}
-          style={{ marginTop: '20px' }}
-        >
-          {loading ? 'Logging in...' : 'Login'}
-        </Button>
-      </CardContent>
-    </Card>
+      <Button title={loading ? 'Logging in...' : 'Login'} onPress={handleLogin} disabled={loading} />
+      {loading && <ActivityIndicator style={{ marginTop: 20 }} />}
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    paddingHorizontal: 20,
+  },
+  title: {
+    fontSize: 24,
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  input: {
+    height: 40,
+    borderColor: 'gray',
+    borderWidth: 1,
+    marginBottom: 10,
+    paddingHorizontal: 10,
+  },
+  message: {
+    textAlign: 'center',
+    marginBottom: 10,
+  },
+  error: {
+    color: 'red',
+  },
+  success: {
+    color: 'green',
+  },
+});
