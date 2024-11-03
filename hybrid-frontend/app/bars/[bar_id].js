@@ -4,6 +4,7 @@ import { Text, Card, Title, Paragraph, Button } from 'react-native-paper';
 import axios from 'axios';
 import { useLocalSearchParams, useRouter } from 'expo-router'; 
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { REACT_APP_API_URL } from '@env';
 
 export default function BarsShow() {
   const { bar_id } = useLocalSearchParams();
@@ -14,10 +15,8 @@ export default function BarsShow() {
   const [error, setError] = useState(null);
   const [attendances, setAttendances] = useState({});
   const [userAttendanceStatus, setUserAttendanceStatus] = useState({});
+  const apiUrl = REACT_APP_API_URL;
   
-
-
-
   useEffect(() => {
     const fetchUserId = async () => {
       try {
@@ -35,7 +34,7 @@ export default function BarsShow() {
   useEffect(() => {
     const fetchBarDetails = async () => {
       try {
-        const response = await axios.get(`http://localhost:3001/api/v1/bars/${bar_id}/events`);
+        const response = await axios.get(`${apiUrl}/api/v1/bars/${bar_id}/events`);
         setBar(response.data.bar || response.bar);
         setEvents(response.data.events || response.events);
       } catch (error) {
@@ -51,7 +50,7 @@ export default function BarsShow() {
 
   const fetchAttendances = async (eventId) => {
     try {
-      const response = await axios.get(`http://localhost:3001/api/v1/events/${eventId}/attendances`);
+      const response = await axios.get(`${apiUrl}/api/v1/events/${eventId}/attendances`);
       setAttendances(prevAttendances => ({
         ...prevAttendances,
         [eventId]: response.data.attendees || []
@@ -89,10 +88,10 @@ export default function BarsShow() {
     try {
       if (isAttending) {
         // Desconfirmar asistencia
-        await axios.delete(`http://localhost:3001/api/v1/events/${eventId}/attendances/${userId}`);
+        await axios.delete(`${apiUrl}api/v1/events/${eventId}/attendances/${userId}`);
       } else {
         // Confirmar asistencia
-        await axios.post(`http://localhost:3001/api/v1/events/${eventId}/attendances`, { user_id: userId });
+        await axios.post(`${apiUrl}/api/v1/events/${eventId}/attendances`, { user_id: userId });
       }
       
       // Actualizar el estado de asistencia y recargar la lista de asistentes

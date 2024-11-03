@@ -3,6 +3,7 @@ import { Text, View, TextInput, Button, ActivityIndicator, StyleSheet } from 're
 import axios from 'axios';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { REACT_APP_API_URL } from '@env';
 
 export default function LoginScreen() {
   const navigation = useNavigation();
@@ -11,6 +12,7 @@ export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [messageType, setMessageType] = useState('');
+  const apiUrl = REACT_APP_API_URL;
 
   const validateForm = () => {
     if (!email || !password) {
@@ -31,7 +33,7 @@ export default function LoginScreen() {
 
     setLoading(true);
     try {
-      const response = await axios.post('http://127.0.0.1:3001/api/v1/login', {
+      const response = await axios.post(`${apiUrl}/api/v1/login`, {
         user: { email, password },
       });
 
@@ -61,7 +63,7 @@ export default function LoginScreen() {
     <View style={styles.container}>
       <Text style={styles.title}>Login</Text>
 
-      {message && (
+      {message && typeof message === 'string' && (
         <Text style={[styles.message, messageType === 'error' ? styles.error : styles.success]}>
           {message}
         </Text>

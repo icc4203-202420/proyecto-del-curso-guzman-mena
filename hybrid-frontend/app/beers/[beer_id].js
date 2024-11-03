@@ -4,6 +4,7 @@ import { Text, Card, Title, Paragraph, Button } from 'react-native-paper';
 import axios from 'axios';
 import { useLocalSearchParams } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { REACT_APP_API_URL } from '@env';
 
 export default function BeersShow() {
   const { beer_id } = useLocalSearchParams();
@@ -15,6 +16,7 @@ export default function BeersShow() {
   const [newRating, setNewRating] = useState('');
   const [reviewError, setReviewError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+  const apiUrl = REACT_APP_API_URL;
 
   useEffect(() => {
     const fetchUserId = async () => {
@@ -28,7 +30,7 @@ export default function BeersShow() {
   useEffect(() => {
     const fetchBeerDetails = async () => {
       try {
-        const response = await axios.get(`http://127.0.0.1:3001/api/v1/beers/${beer_id}`);
+        const response = await axios.get(`${apiUrl}/api/v1/beers/${beer_id}`);
         setBeer(response.data.beer || response.data);
         setLoading(false);
       } catch (error) {
@@ -59,7 +61,7 @@ export default function BeersShow() {
     }
 
     try {
-      await axios.post(`http://127.0.0.1:3001/api/v1/beers/${beer_id}/reviews`, {
+      await axios.post(`${apiUrl}/api/v1/beers/${beer_id}/reviews`, {
         review: {
           text: newReview,
           rating: rating,

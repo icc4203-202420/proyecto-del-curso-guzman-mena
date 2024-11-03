@@ -4,11 +4,13 @@ import React, { useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage'; 
 import { useFocusEffect } from '@react-navigation/native';
 import {useRouter } from 'expo-router'
+import { REACT_APP_API_URL } from '@env';
 
 
 export default function ProfileIndex() {
 
   const router = useRouter()
+  const apiUrl = REACT_APP_API_URL;
 
   const [user, setUser] = useState({
     name: '',
@@ -24,7 +26,7 @@ export default function ProfileIndex() {
       const storedUserId = await AsyncStorage.getItem('@user_id');
       
       if (storedUserId) {
-        const response = await fetch(`http://localhost:3001/api/v1/users/${storedUserId}`);
+        const response = await fetch(`${apiUrl}/api/v1/users/${storedUserId}`);
         if (response.ok) {
           const data = await response.json();
           setUser({

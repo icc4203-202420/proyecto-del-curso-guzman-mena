@@ -3,6 +3,8 @@ import { View, FlatList, StyleSheet, Text, ActivityIndicator } from 'react-nativ
 import { Searchbar, List } from 'react-native-paper';
 import axios from 'axios';
 import {useRouter } from 'expo-router'
+import { REACT_APP_API_URL } from '@env';
+
 
 
 export default function BeersIndex({ navigation }) {
@@ -11,12 +13,13 @@ export default function BeersIndex({ navigation }) {
   const [beers, setBeers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const apiUrl = REACT_APP_API_URL;
 
   useEffect(() => {
     // Fetch beers from the API
     const fetchBeers = async () => {
       try {
-        const response = await axios.get('http://127.0.0.1:3001/api/v1/beers'); 
+        const response = await axios.get(`${apiUrl}/api/v1/beers`); 
         setBeers(response.data.beers || response.data || []);  
         setLoading(false);
       } catch (error) {

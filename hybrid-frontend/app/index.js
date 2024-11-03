@@ -1,16 +1,15 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Button } from 'react-native-paper';
-// import { useNavigation } from '@react-navigation/native'; // Importa el hook
 import {useRouter } from 'expo-router'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MaterialIcons } from '@expo/vector-icons';
 
 
+
 // El componente funcional MainIndex
 export default function MainIndex() {
   const router = useRouter()
-  // const navigation = useNavigation(); // Usa el hook para obtener el objeto de navegación
 
   const handleLogout = async () => {
     try {

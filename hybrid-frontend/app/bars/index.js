@@ -3,6 +3,7 @@ import { View, FlatList, StyleSheet, Text, ActivityIndicator } from 'react-nativ
 import { Searchbar, List } from 'react-native-paper';
 import axios from 'axios';
 import { useRouter } from 'expo-router';
+import { REACT_APP_API_URL } from '@env';
 
 
 export default function BarsIndex({ navigation }) {
@@ -11,12 +12,13 @@ export default function BarsIndex({ navigation }) {
   const [bars, setBars] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const apiUrl = REACT_APP_API_URL;
 
   useEffect(() => {
     // Fetch bars from the API
     const fetchBars = async () => {
       try {
-        const response = await axios.get('http://127.0.0.1:3001/api/v1/bars'); 
+        const response = await axios.get(`${apiUrl}/api/v1/bars`); 
         setBars(response.data.bars || response.data || []);  
         setLoading(false);
       } catch (error) {
