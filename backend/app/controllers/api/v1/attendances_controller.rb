@@ -14,6 +14,7 @@ class API::V1::AttendancesController < ApplicationController
   def index
     attendees = @event.attendances.includes(:user).map do |attendance|
       {
+        user_id: attendance.user.id,
         first_name: attendance.user.first_name,
         last_name: attendance.user.last_name
       }

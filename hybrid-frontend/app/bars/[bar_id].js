@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, ActivityIndicator, ScrollView } from 'react-native';
+import { View, StyleSheet, ActivityIndicator, ScrollView, Alert } from 'react-native';
 import { Text, Card, Title, Paragraph, Button } from 'react-native-paper';
 import axios from 'axios';
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router'; 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function BarsShow() {
@@ -12,6 +12,11 @@ export default function BarsShow() {
   const [events, setEvents] = useState([]); 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [attendances, setAttendances] = useState({});
+  const [userAttendanceStatus, setUserAttendanceStatus] = useState({});
+  
+
+
 
   useEffect(() => {
     const fetchUserId = async () => {
@@ -28,25 +33,80 @@ export default function BarsShow() {
 
 
   useEffect(() => {
-    const fetchDetails = async () => {
+    const fetchBarDetails = async () => {
       try {
         const response = await axios.get(`http://localhost:3001/api/v1/bars/${bar_id}/events`);
         setBar(response.data.bar || response.bar);
         setEvents(response.data.events || response.events);
-      
-        console.log("Detalles de los eventos", response.data.events || response.data);
-        console.log("Detalles del bar", response.data.bar || response.data);
-
-
       } catch (error) {
-        console.error('Error al cargar los datos:', error);
-        setError('Error al cargar los Datos');
+        console.error('Error al cargar detalles del bar y eventos:', error);
+        setError('Error al cargar los detalles del bar y eventos');
       } finally {
         setLoading(false);
       }
     };
-    fetchDetails();
+    fetchBarDetails();
   }, [bar_id]);
+
+
+  const fetchAttendances = async (eventId) => {
+    try {
+      const response = await axios.get(`http://localhost:3001/api/v1/events/${eventId}/attendances`);
+      setAttendances(prevAttendances => ({
+        ...prevAttendances,
+        [eventId]: response.data.attendees || []
+      }));
+
+      if (userId) {
+        const userAttendance = response.data.attendees.some(attendance => attendance.user_id.toString() === userId.toString());
+        setUserAttendanceStatus(prevStatus => ({
+          ...prevStatus,
+          [eventId]: userAttendance
+        }));
+      }
+
+    } catch (error) {
+      console.error(`Error al cargar asistentes del evento ${eventId}:`, error);
+    }
+  };
+
+  // Cargar asistencias para cada evento
+  useEffect(() => {
+    events.forEach(event => {
+      fetchAttendances(event.id);
+    });
+  }, [events]);
+
+
+  const handleAttendance = async (eventId) => {
+    if (!userId) {
+      Alert.alert('Error', 'Debes iniciar sesión para confirmar asistencia.');
+      return;
+    }
+
+    const isAttending = userAttendanceStatus[eventId];
+
+    try {
+      if (isAttending) {
+        // Desconfirmar asistencia
+        await axios.delete(`http://localhost:3001/api/v1/events/${eventId}/attendances/${userId}`);
+      } else {
+        // Confirmar asistencia
+        await axios.post(`http://localhost:3001/api/v1/events/${eventId}/attendances`, { user_id: userId });
+      }
+      
+      // Actualizar el estado de asistencia y recargar la lista de asistentes
+      setUserAttendanceStatus(prevStatus => ({
+        ...prevStatus,
+        [eventId]: !isAttending
+      }));
+      fetchAttendances(eventId); // Recargar lista de asistentes
+
+    } catch (error) {
+      console.error('Error al cambiar el estado de asistencia:', error);
+    }
+  };
+
 
   if (loading) {
     return (
@@ -101,25 +161,30 @@ export default function BarsShow() {
                 <Text>Description: {event.description}</Text>
                 <Text>Date: {event.date}</Text>
                 <Text>Cofirmed:</Text>
-                <Card style={styles.card}>
-                <Card.Content>
-                  <ScrollView contentContainerStyle={styles.scrollContainer}>
-                    {/* Mostrar los handles confirmados */}
-                    {event.attendances && event.attendances.length > 0 ? (
-                      event.attendances.map((attendance, idx) => (
-                        <Text key={idx}>{attendance.user.handle}</Text> 
-                      ))
-                    ) : (
-                      <Text>No attendees confirmed yet.</Text>
-                    )}
-                  </ScrollView>
-                </Card.Content>
-              </Card>
+                 {/* Mostrar los handles confirmados */}
+                 <Card style={styles.card}>
+                    <Card.Content>
+                      <ScrollView contentContainerStyle={styles.scrollContainer}>
+                        {attendances[event.id] && attendances[event.id].length > 0 ? (
+                          attendances[event.id].map((attendance, idx) => (
+                            <Text key={idx}>{attendance.first_name + " " +attendance.last_name}</Text> 
+                          ))
+                        ) : (
+                          <Text>No attendees confirmed yet.</Text>
+                        )}
+                      </ScrollView>
+                    </Card.Content>
+                  </Card>
+
+
+
                 <Button 
-                mode="contained" 
-                  onPress={() => router.push()} style={styles.button}>
-                  Confirm Attendance
-              </Button>
+                  mode="contained" 
+                  onPress={() => handleAttendance(event.id)} 
+                  style={styles.button}>
+                  {userAttendanceStatus[event.id] ? 'Desconfirmar Asistencia' : 'Confirmar Asistencia'}
+                </Button>
+
               </ScrollView>
               </Card>
             ))
@@ -164,8 +229,6 @@ const styles = StyleSheet.create({
   scrollContainer: {
     maxHeight: '100%',
   },
-
-
   eventCard: {
     backgroundColor: '#f0f0f0',
     padding: 10,
@@ -180,11 +243,11 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   button: {
-    paddingVertical: 0.3, // Ajusta el padding vertical
-    paddingHorizontal: 0.2, // Ajusta el padding horizontal
-    width: 200, // Ancho del botón
-    alignSelf: 'flex-start', // Alinea el botón a la izquierda
-    marginVertical: 3, // Espaciado vertical
+    paddingVertical: 0.3, 
+    paddingHorizontal: 0.2, 
+    width: 200, 
+    alignSelf: 'flex-start', 
+    marginVertical: 3,
   },
 
 

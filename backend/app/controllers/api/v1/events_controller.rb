@@ -8,23 +8,26 @@ class API::V1::EventsController < ApplicationController
 
   # GET /bar/:bar_id/events
   def index
-    @bar = Bar.includes(events: { attendances: :user }).find(params[:bar_id]) # Encuentra el bar con eventos y asistencias
-
     if @bar.events.any?
       render json: { 
         bar: @bar.as_json(include: { address: { include: :country } }), 
-        events: @bar.events.as_json(include: { attendances: { include: :user } }) # Incluir asistencias y usuarios
+        events: @bar.events 
       }, status: :ok
     else
       render json: { message: "No events found for this bar" }, status: :ok
     end
-  rescue ActiveRecord::RecordNotFound
-    render json: { error: 'Bar not found' }, status: :not_found
   end
-
   
+
   # GET /events/:id
   def show
+    event_data = @event.as_json
+    if @event.images.attached?
+      event_data.merge!(
+        images: @event.images.map { |image| url_for(image) }
+      )
+    end
+    render json: { event: event_data }, status: :ok
   end
 
   # POST /bars/:bar_id/events
