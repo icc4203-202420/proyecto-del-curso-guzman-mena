@@ -4,7 +4,7 @@ class API::V1::EventsController < ApplicationController
   respond_to :json
   before_action :set_bar, only: [:index, :create]
   before_action :verify_jwt_token, only: [:create, :update, :destroy]
-  before_action :set_event, only: [:show, :update, :destroy, :upload_images]
+  before_action :set_event, only: [:show, :update, :destroy, :upload_images, :upload_photo]
 
   # GET /bar/:bar_id/events
   def index
@@ -17,7 +17,6 @@ class API::V1::EventsController < ApplicationController
       render json: { message: "No events found for this bar" }, status: :ok
     end
   end
-  
 
   # GET /events/:id
   def show
@@ -72,6 +71,36 @@ class API::V1::EventsController < ApplicationController
       render json: { error: 'No images provided.' }, status: :unprocessable_entity
     end
   end
+
+  # Nueva acción para subir una foto al evento y guardarla en la carpeta public
+  def upload_photo
+    Rails.logger.info "Recibiendo solicitud de carga de foto para el evento #{@event.id}"
+
+    if params[:photo].present? && params[:photo].respond_to?(:read)
+      Rails.logger.info "Foto recibida correctamente y con un formato adecuado."
+
+      directory = Rails.root.join('public', 'uploads', 'events', @event.id.to_s)
+      FileUtils.mkdir_p(directory) unless File.directory?(directory)
+
+      filename = "#{SecureRandom.uuid}.jpg"
+      filepath = directory.join(filename)
+
+      begin
+        File.open(filepath, 'wb') do |file|
+          file.write(params[:photo].read)
+        end
+        Rails.logger.info "Foto guardada exitosamente en: #{filepath}"
+        render json: { message: 'Photo uploaded successfully.', path: "/uploads/events/#{@event.id}/#{filename}" }, status: :ok
+      rescue => e
+        Rails.logger.error "Error al guardar la foto: #{e.message}"
+        render json: { error: 'Hubo un problema al subir la foto.' }, status: :internal_server_error
+      end
+    else
+      Rails.logger.error "No se proporcionó una foto o el archivo es inválido."
+      render json: { error: 'No photo provided or invalid file format.' }, status: :unprocessable_entity
+    end
+  end
+  
 
   private
 
