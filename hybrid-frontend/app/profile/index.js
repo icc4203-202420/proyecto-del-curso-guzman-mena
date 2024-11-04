@@ -5,6 +5,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
 import {useRouter } from 'expo-router'
 import { REACT_APP_API_URL } from '@env';
+import { saveItem, getItem, deleteItem } from "../../util/Storage";
 
 
 export default function ProfileIndex() {
@@ -23,7 +24,7 @@ export default function ProfileIndex() {
 
   const fetchUserData = async () => {
     try {
-      const storedUserId = await AsyncStorage.getItem('@user_id');
+      const storedUserId = await getItem('userId');
       
       if (storedUserId) {
         const response = await fetch(`${apiUrl}/api/v1/users/${storedUserId}`);

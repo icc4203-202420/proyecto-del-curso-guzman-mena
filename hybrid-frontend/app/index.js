@@ -4,6 +4,8 @@ import { Button } from 'react-native-paper';
 import {useRouter } from 'expo-router'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MaterialIcons } from '@expo/vector-icons';
+import { saveItem, getItem, deleteItem } from "../util/Storage";
+
 
 
 
@@ -13,7 +15,8 @@ export default function MainIndex() {
 
   const handleLogout = async () => {
     try {
-      await AsyncStorage.removeItem('@user_id');
+      
+      await deleteItem('userId');
       console.log('user_id borrado exitosamente');
     } catch (error) {
       console.error('Error al borrar user_id:', error);

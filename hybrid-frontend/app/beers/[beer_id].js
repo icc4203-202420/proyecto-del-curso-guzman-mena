@@ -20,7 +20,6 @@ export default function BeersShow() {
 
   useEffect(() => {
     const fetchUserId = async () => {
-      const storedUserId = await AsyncStorage.getItem('@user_id');
       setUserId(storedUserId);
     };
 
