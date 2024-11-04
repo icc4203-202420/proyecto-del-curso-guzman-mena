@@ -40,14 +40,13 @@ if Rails.env.development?
 
   users = 10.times.map do |i|
     user = FactoryBot.create(:user, 
-                             name: "usuario#{i + 1}", 
+                             first_name: "usuario#{i + 1}", 
                              email: "usuario#{i + 1}@gmail.com", 
                              password: "123456",
                              password_confirmation: "123456")
     user.address.update(country: countries.sample)
     user
   end
-
   # Crear bares con direcciones y cervezas asociadas, ajustando latitud y longitud
   bars = FactoryBot.create_list(:bar, 10) do |bar|
     bar.address.update(country: countries.sample)
@@ -89,13 +88,12 @@ if Rails.env.development?
                                 user: users.sample) # Asigna una reseña aleatoria de los usuarios creados
     end
   end
-
-  # Crear usuarios 11 y 12 sin relaciones
-  user11 = FactoryBot.create(:user, name: "usuario11", email: "usuario11@gmail.com", password: "123456", password_confirmation: "123456")
-  user11.address.update(country: countries.sample)
-
-  user12 = FactoryBot.create(:user, name: "usuario12", email: "usuario12@gmail.com", password: "123456", password_confirmation: "123456")
-  user12.address.update(country: countries.sample)
+    # Crear usuarios 11 y 12 sin relaciones de amistad, asistencias, ni reseñas
+    user11 = FactoryBot.create(:user, first_name: "usuario11", email: "usuario11@gmail.com", password: "123456", password_confirmation: "123456")
+    user11.address.update(country: countries.sample)
+  
+    user12 = FactoryBot.create(:user, first_name: "usuario12", email: "usuario12@gmail.com", password: "123456", password_confirmation: "123456")
+    user12.address.update(country: countries.sample)
 
 end
 
