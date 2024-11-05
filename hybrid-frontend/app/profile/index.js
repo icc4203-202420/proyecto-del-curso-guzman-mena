@@ -1,19 +1,18 @@
-import { View, StyleSheet, ScrollView } from 'react-native';
-import { Text, Avatar, List, Button } from 'react-native-paper';
+import { View, StyleSheet, ScrollView, TextInput } from 'react-native';
+import { Text, Avatar, Card, Button, Title } from 'react-native-paper';
 import React, { useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage'; 
 import { useFocusEffect } from '@react-navigation/native';
-import {useRouter } from 'expo-router'
+import { useRouter } from 'expo-router';
+import axios from 'axios';
 import { REACT_APP_API_URL } from '@env';
-import { saveItem, getItem, deleteItem } from "../../util/Storage";
-
 
 export default function ProfileIndex() {
-
-  const router = useRouter()
+  const router = useRouter();
   const apiUrl = REACT_APP_API_URL;
 
   const [user, setUser] = useState({
+    id: '',
     name: '',
     email: '',
     age: '',
@@ -22,19 +21,25 @@ export default function ProfileIndex() {
     eventAtendances: [],
   });
 
+  const [searchHandle, setSearchHandle] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [error, setError] = useState('');
+
   const fetchUserData = async () => {
     try {
-      const storedUserId = await getItem('userId');
+      const storedUserId = await AsyncStorage.getItem('userId');
       
       if (storedUserId) {
-        const response = await fetch(`${apiUrl}/api/v1/users/${storedUserId}`);
-        if (response.ok) {
-          const data = await response.json();
+        const response = await axios.get(`${apiUrl}/api/v1/users/${storedUserId}`);
+        if (response.status === 200) {
+          const data = response.data;
           setUser({
-            name: capitalizeFirstLetter(data.first_name) + " " + capitalizeFirstLetter(data.last_name),
+            id: data.id,
+            name: `${data.first_name} ${data.last_name}`,
             email: data.email,
             age: data.age,
             reviews: data.reviews || [],
+            friends: data.friendships?.map(friendship => friendship.friend) || [],
           });
         } else {
           console.error('Error al obtener datos del usuario:', response.status);
@@ -51,84 +56,139 @@ export default function ProfileIndex() {
     }, [])
   );
 
-  function capitalizeFirstLetter(str) {
-    if (str.length === 0) return str;
-    return str.charAt(0).toUpperCase() + str.slice(1);
-  }
-// visualisacion de la vista
+  const searchUserByHandle = async (handle) => {
+    try {
+      const response = await axios.get(`${apiUrl}/api/v1/users/search?handle=${handle}`);
+      if (response.status === 200) {
+        setSearchResults(response.data.users);
+        setError('');
+      } else {
+        setSearchResults([]);
+        setError('No se encontraron usuarios.');
+      }
+    } catch (error) {
+      console.error('Error en la búsqueda de usuario:', error);
+      setError('Error al buscar usuario.');
+    }
+  };
+
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      if (searchHandle.length > 0) {
+        searchUserByHandle(searchHandle);
+      } else {
+        setSearchResults([]);
+      }
+    }, 300);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchHandle]);
+
+  const addFriend = async (friendId) => {
+    try {
+      const response = await axios.post(`${apiUrl}/api/v1/friendships`, {
+        user_id: user.id,
+        friend_id: friendId,
+      });
+  
+      if (response.status === 201) {
+        alert('Amigo agregado exitosamente.');
+        fetchUserData(); // Refresca la lista de amigos después de agregar uno nuevo
+      } else if (response.status === 200 && response.data.message === 'Ya eres amigo de este usuario') {
+        alert(response.data.message); // Muestra el mensaje de que ya son amigos
+      } else {
+        setError('Error al agregar amigo.');
+      }
+    } catch (error) {
+      console.error('Error al agregar amigo:', error);
+      setError('Error al agregar amigo.');
+    }
+  };
+  
+
   return (
-    <View style={styles.container}>
-      {/* Datos personales */}
+    <ScrollView style={styles.container}>
       <View style={styles.header}>
         <Avatar.Text size={80} label={user.name[0]} />
         <Text style={styles.name}>{user.name}</Text>
         <Text style={styles.email}>{user.email}</Text>
       </View>
 
+      {/* Lista de Amigos */}
+      <Card style={styles.card}>
+        <Card.Content>
+          <Title>Amigos</Title>
+          <ScrollView contentContainerStyle={styles.scrollContainer}>
+            {user.friends.length > 0 ? (
+              user.friends.map((friend, index) => (
+                <View key={index} style={styles.friendCard}>
+                  <Text>{`${friend.first_name} ${friend.last_name}`}</Text>
+                </View>
+              ))
+            ) : (
+              <Text>No tienes amigos agregados.</Text>
+            )}
+          </ScrollView>
+        </Card.Content>
+      </Card>
 
-      <View style={styles.card}>
-        <Text style={styles.title}>Review</Text>
-        <ScrollView contentContainerStyle={styles.scrollContainer}>
-        {user.reviews.length > 0 ? (
-          user.reviews.map((review, index) => (
-            <View key={index} style={styles.reviewCard}>
-              <Text style={styles.reviewTitle}>{`Reseña para: ${review.beer.name}`}</Text>
-              <Button 
-                mode="contained" 
-                  onPress={() => router.push(`/beers/${review.beer_id}`)} style={styles.button}>
-                  View Beer
-              </Button>
-              <Text style={styles.reviewRating}>{`Calificación: ${review.rating}`}</Text>
-              <Text style={styles.reviewContent}>{review.text}</Text>
-              
-            </View>
-          ))
-        ) : (
-          <Text>No hay reseñas disponibles.</Text> // Mensaje cuando no hay reseñas
-        )}
-        </ScrollView>
-      </View>
+      {/* Sección de Búsqueda de Amigos */}
+      <Card style={styles.card}>
+        <Card.Content>
+          <Title>Buscar amigos por handle</Title>
+          <TextInput
+            style={styles.input}
+            placeholder="Ingrese handle"
+            value={searchHandle}
+            onChangeText={setSearchHandle}
+          />
+          <ScrollView>
+            {searchResults.length > 0 ? (
+              searchResults.map((result) => (
+                <View key={result.id} style={styles.friendCard}>
+                  <Text>{result.first_name} {result.last_name}</Text>
+                  <Button mode="outlined" onPress={() => addFriend(result.id)} style={styles.addButton}>
+                    Agregar amigo
+                  </Button>
+                </View>
+              ))
+            ) : (
+              <Text>No se encontraron resultados.</Text>
+            )}
+          </ScrollView>
+          {error ? <Text style={styles.errorText}>{error}</Text> : null}
+        </Card.Content>
+      </Card>
 
-      
-
-
-
-
-
-      {/* Interaccion con la APP */}
-      {/* Eventos asisistidos o por asistir */}
-      {/* <List.Section>
-        <List.Subheader>Event Atendances</List.Subheader>
-        {user.eventAtendances.map((event, index) => ( 
-          <List.Item key={index} title={beer} left={() => <List.Icon icon="beer" />} />
-        ))}
-      </List.Section> */}
-
-      
-
-
-      {/* Reseñas en la APP*/}
-      {/* <List.Section>
-        <List.Subheader>Review</List.Subheader>
-        {user.favoriteBeers.map((review, index) => (
-          <List.Item key={index} title={beer} left={() => <List.Icon icon="beer" />} />
-        ))}
-      </List.Section> */}
-
-      {/* Amigos */}
-
-      {/* <List.Section>
-        <List.Subheader>friends</List.Subheader>
-        {user.favoriteBars.map((bar, index) => (
-          <List.Item key={index} title={bar} left={() => <List.Icon icon="glass-mug-variant" />} />
-        ))}
-      </List.Section> */}
-    </View>
+      {/* Reseñas */}
+      <Card style={styles.card}>
+        <Card.Content>
+          <Title>Reseñas</Title>
+          <ScrollView contentContainerStyle={styles.scrollContainer}>
+            {user.reviews.length > 0 ? (
+              user.reviews.map((review, index) => (
+                <View key={index} style={styles.reviewCard}>
+                  <Text style={styles.reviewTitle}>{`Reseña para: ${review.beer.name}`}</Text>
+                  <Button 
+                    mode="contained" 
+                    onPress={() => router.push(`/beers/${review.beer_id}`)} 
+                    style={styles.button}
+                  >
+                    Ver Cerveza
+                  </Button>
+                  <Text style={styles.reviewRating}>{`Calificación: ${review.rating}`}</Text>
+                  <Text style={styles.reviewContent}>{review.text}</Text>
+                </View>
+              ))
+            ) : (
+              <Text>No hay reseñas disponibles.</Text>
+            )}
+          </ScrollView>
+        </Card.Content>
+      </Card>
+    </ScrollView>
   );
 }
-
-// Estilos Frontend
-
 
 const styles = StyleSheet.create({
   container: {
@@ -148,34 +208,26 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#666',
   },
-
-
-  title: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 10,
-  },
-  content: {
-    fontSize: 14,
-    color: '#333',
-  },
-
   card: {
-    backgroundColor: '#fff',  // Fondo blanco
-    padding: 20,              // Espaciado interno
-    borderRadius: 10,         // Bordes redondeados
-    shadowColor: '#000',      // Color de la sombra
-    shadowOffset: { width: 0, height: 2 },  // Desplazamiento de la sombra
-    shadowOpacity: 0.2,       // Opacidad de la sombra
-    shadowRadius: 5,          // Difusión de la sombra
-    elevation: 3,             // Sombra para Android
-    marginVertical: 10,       // Separación entre tarjetas
-    maxHeight: 200,
+    backgroundColor: '#fff',
+    padding: 20,
+    borderRadius: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+    elevation: 3,
+    marginVertical: 10,
   },
   scrollContainer: {
-    maxHeight: '100%', // Para permitir el desplazamiento dentro de la tarjeta
+    maxHeight: '100%',
   },
-
+  friendCard: {
+    padding: 10,
+    borderRadius: 5,
+    backgroundColor: '#f9f9f9',
+    marginBottom: 5,
+  },
   reviewCard: {
     backgroundColor: '#f0f0f0',
     padding: 10,
@@ -185,16 +237,18 @@ const styles = StyleSheet.create({
   reviewTitle: {
     fontWeight: 'bold',
   },
-  reviewContent: {
-    fontSize: 14,
-    color: '#333',
+  input: {
+    height: 40,
+    borderColor: '#ccc',
+    borderWidth: 1,
+    borderRadius: 5,
+    paddingHorizontal: 10,
+    marginBottom: 10,
   },
   button: {
-    paddingVertical: 0.3, // Ajusta el padding vertical
-    paddingHorizontal: 0.2, // Ajusta el padding horizontal
-    width: 200, // Ancho del botón
-    alignSelf: 'flex-start', // Alinea el botón a la izquierda
-    marginVertical: 3, // Espaciado vertical
+    marginBottom: 10,
   },
-
+  errorText: {
+    color: 'red',
+  },
 });
