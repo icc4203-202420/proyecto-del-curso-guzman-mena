@@ -3,9 +3,8 @@ import { View, StyleSheet, ActivityIndicator, TextInput, Alert, ScrollView } fro
 import { Text, Card, Title, Paragraph, Button } from 'react-native-paper';
 import axios from 'axios';
 import { useLocalSearchParams } from 'expo-router';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { REACT_APP_API_URL } from '@env';
 import { saveItem, getItem, deleteItem } from "../../util/Storage";
+import { REACT_APP_API_URL } from '@env';
 
 export default function BeersShow() {
   const { beer_id } = useLocalSearchParams();
@@ -21,6 +20,7 @@ export default function BeersShow() {
 
   useEffect(() => {
     const fetchUserId = async () => {
+      const storedUserId = await getItem('userId');
       setUserId(storedUserId);
     };
 

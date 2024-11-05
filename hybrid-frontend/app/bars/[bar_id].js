@@ -3,9 +3,9 @@ import { View, StyleSheet, ActivityIndicator, ScrollView, Alert } from 'react-na
 import { Text, Card, Title, Paragraph, Button } from 'react-native-paper';
 import axios from 'axios';
 import { useLocalSearchParams, useRouter } from 'expo-router'; 
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker';
 import { REACT_APP_API_URL } from '@env';
+import { saveItem, getItem, deleteItem } from "../../util/Storage";
 
 export default function BarsShow() {
   const { bar_id } = useLocalSearchParams();
@@ -21,7 +21,7 @@ export default function BarsShow() {
   useEffect(() => {
     const fetchUserId = async () => {
       try {
-        const storedUserId = await AsyncStorage.getItem('@user_id');
+        const storedUserId = await getItem('userId');
         setUserId(storedUserId);
       } catch (e) {
         console.error('Error al obtener el ID de usuario:', e);

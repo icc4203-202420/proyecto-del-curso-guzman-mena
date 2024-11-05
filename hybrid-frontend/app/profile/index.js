@@ -1,7 +1,6 @@
 import { View, StyleSheet, ScrollView } from 'react-native';
 import { Text, Avatar, List, Button } from 'react-native-paper';
-import React, { useState, useEffect } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage'; 
+import React, { useState, useEffect } from 'react'; 
 import { useFocusEffect } from '@react-navigation/native';
 import {useRouter } from 'expo-router'
 import { REACT_APP_API_URL } from '@env';
