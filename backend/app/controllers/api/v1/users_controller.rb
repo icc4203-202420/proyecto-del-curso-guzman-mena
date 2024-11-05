@@ -1,7 +1,7 @@
 class API::V1::UsersController < ApplicationController
   respond_to :json
   before_action :set_user, only: [:show, :update]
-  
+
   def index
     @users = User.includes(:reviews, :address).all
     render json: { users: @users }, status: :ok
@@ -12,10 +12,13 @@ class API::V1::UsersController < ApplicationController
         reviews: { 
           only: [:id, :text, :rating, :beer_id],
           include: {
-            beer: { only: [:name] } # Asegúrate de que la asociación esté configurada en el modelo
+            beer: { only: [:name] }
           }
         },
-        address: { only: [:line1, :line2, :city, :country] } 
+        friendships: {
+          include: { friend: { only: [:id, :first_name, :last_name] } }
+        },
+        address: { only: [:line1, :line2, :city, :country] }
       }),
       status: :ok
   end
@@ -30,7 +33,6 @@ class API::V1::UsersController < ApplicationController
   end
 
   def update
-    #byebug
     if @user.update(user_params)
       render :show, status: :ok, location: api_v1_users_path(@user)
     else
@@ -41,6 +43,16 @@ class API::V1::UsersController < ApplicationController
   def search_by_handle
     users = User.where("handle LIKE ?", "%#{params[:handle]}%")
     render json: users, status: :ok
+  end
+
+  def search
+    handle = params[:handle]
+    if handle.present?
+      users = User.where("LOWER(handle) LIKE ?", "%#{handle.downcase}%") # Conversión a minúsculas para búsqueda insensible
+      render json: { users: users }, status: :ok
+    else
+      render json: { error: 'No handle provided' }, status: :bad_request
+    end
   end
   
 

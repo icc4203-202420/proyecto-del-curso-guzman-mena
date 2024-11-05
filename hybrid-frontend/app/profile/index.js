@@ -1,7 +1,7 @@
 import { View, StyleSheet, ScrollView, TextInput } from 'react-native';
 import { Text, Avatar, Card, Button, Title } from 'react-native-paper';
 import React, { useState, useEffect } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage'; 
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import axios from 'axios';

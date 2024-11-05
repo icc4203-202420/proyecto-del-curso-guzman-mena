@@ -1,6 +1,4 @@
 Rails.application.routes.draw do
-  # devise_for :users
-  get 'current_user', to: 'current_user#index'
   devise_for :users, path: '', path_names: {
     sign_in: 'api/v1/login',
     sign_out: 'api/v1/logout',
@@ -20,24 +18,27 @@ Rails.application.routes.draw do
       end
   
       resources :events do
-        resources :attendances, only: [:create, :index]  # Rutas para el check-in y ver asistentes
+        resources :attendances, only: [:create, :index]
         member do
-          post :upload_images  # Ruta personalizada para subir imágenes
-          post :upload_photo   # Ruta alternativa para subir fotos
+          post :upload_images
+          post :upload_photo
         end
       end
   
       resources :beers do
-        resources :reviews, only: [:index, :create]  # Reseñas anidadas dentro de cervezas
+        resources :reviews, only: [:index, :create]
       end
   
       resources :users do
-        resources :friendships
-        resources :reviews, only: [:index]
+        collection do
+          get 'search', to: 'users#search'
+        end
       end
   
+      # Rutas para friendships
+      resources :friendships, only: [:create, :index, :destroy]
+      
       resources :reviews, only: [:index, :show, :create, :update, :destroy]
     end
   end
-  
 end

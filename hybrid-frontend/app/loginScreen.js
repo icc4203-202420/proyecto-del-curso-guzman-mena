@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Text, View, TextInput, Button, ActivityIndicator, StyleSheet } from 'react-native';
 import axios from 'axios';
 import { useNavigation } from '@react-navigation/native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { REACT_APP_API_URL } from '@env';
 import { saveItem, getItem, deleteItem } from "../util/Storage";
 
@@ -41,7 +40,6 @@ export default function LoginScreen() {
       if (response.data.status.code === 200) {
         const currentUser = response.data.status.data.user.id;
         await saveItem("userId",  currentUser.toString());
-        // await AsyncStorage.setItem('@user_id', currentUser.toString());
         setMessage('You have logged in successfully');
         setMessageType('success');
         navigation.navigate('index');
