@@ -33,9 +33,17 @@ export default function LoginScreen() {
     if (!validateForm()) return;
 
     setLoading(true);
+
+    try {
+      const pushToken = await registerForPushNotificationsAsync();
+      console.log(pushToken)
+
+    } catch (e) {
+      console.log(e)
+
+    }
     try {
 
-      // const pushToken = await registerForPushNotificationsAsync();
 
       const response = await axios.post(`${apiUrl}/api/v1/login`, {
         user: { email, password },

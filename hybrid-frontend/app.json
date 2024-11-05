@@ -26,7 +26,12 @@
     "entryPoint": "./App.js",
     "plugins": [
       "expo-secure-store"
-    
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "b96ee567-6306-4064-80d8-54ab236e9ed9"
+      }
+    },
+    "owner": "daniel9091"
   }
 }
