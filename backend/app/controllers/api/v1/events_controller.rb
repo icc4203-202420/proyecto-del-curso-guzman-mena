@@ -74,31 +74,36 @@ class API::V1::EventsController < ApplicationController
 
   # Nueva acción para subir una foto al evento y guardarla en la carpeta public
   def upload_photo
-    Rails.logger.info "Recibiendo solicitud de carga de foto para el evento #{@event.id}"
+    event = Event.find(params[:id])
 
-    if params[:photo].present? && params[:photo].respond_to?(:read)
-      Rails.logger.info "Foto recibida correctamente y con un formato adecuado."
+    # Verifica si se ha recibido el parámetro `image` en formato Base64
+    if params[:image].present?
+      # Eliminar el prefijo `data:image/jpeg;base64,` o similar
+      base64_image = params[:image].sub(/^data:image\/\w+;base64,/, '')
 
-      directory = Rails.root.join('public', 'uploads', 'events', @event.id.to_s)
-      FileUtils.mkdir_p(directory) unless File.directory?(directory)
+      # Decodificar la imagen en formato Base64
+      image_data = Base64.decode64(base64_image)
 
-      filename = "#{SecureRandom.uuid}.jpg"
-      filepath = directory.join(filename)
+      # Definir un nombre de archivo único
+      filename = "event_#{event.id}_#{SecureRandom.uuid}.jpg"
 
-      begin
-        File.open(filepath, 'wb') do |file|
-          file.write(params[:photo].read)
-        end
-        Rails.logger.info "Foto guardada exitosamente en: #{filepath}"
-        render json: { message: 'Photo uploaded successfully.', path: "/uploads/events/#{@event.id}/#{filename}" }, status: :ok
-      rescue => e
-        Rails.logger.error "Error al guardar la foto: #{e.message}"
-        render json: { error: 'Hubo un problema al subir la foto.' }, status: :internal_server_error
+      # Guardar la imagen en el sistema de archivos (carpeta `public/uploads`)
+      filepath = Rails.root.join("public/uploads/#{filename}")
+      File.open(filepath, 'wb') do |file|
+        file.write(image_data)
       end
+
+      # Opcional: Guardar la ruta de la imagen en el modelo `Event`
+      event.update(photo_path: "/uploads/#{filename}")
+
+      render json: { success: true, path: event.photo_path }, status: :ok
     else
-      Rails.logger.error "No se proporcionó una foto o el archivo es inválido."
-      render json: { error: 'No photo provided or invalid file format.' }, status: :unprocessable_entity
+      render json: { error: "No se envió ninguna imagen" }, status: :unprocessable_entity
     end
+  rescue ActiveRecord::RecordNotFound
+    render json: { error: "Evento no encontrado" }, status: :not_found
+  rescue StandardError => e
+    render json: { error: "Error al procesar la imagen: #{e.message}" }, status: :internal_server_error
   end
   
 

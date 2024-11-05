@@ -6,6 +6,8 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { REACT_APP_API_URL } from '@env';
 import { saveItem, getItem, deleteItem } from "../../util/Storage";
+import * as FileSystem from 'expo-file-system';
+import { Platform } from 'react-native';
 
 export default function BarsShow() {
   const { bar_id } = useLocalSearchParams();
@@ -124,39 +126,37 @@ const uploadPhoto = async (eventId) => {
     quality: 1,
   });
 
-  console.log("Resultado de la selección de imagen:", result);
-
   if (result.canceled) {
     alert("No se seleccionó ninguna imagen.");
-    console.log("Usuario canceló la selección de imagen.");
     return;
   }
 
   const selectedAsset = result.assets && result.assets[0];
   if (selectedAsset && selectedAsset.uri) {
-    const localUri = selectedAsset.uri;
-    const filename = localUri.split('/').pop();
-
-    const match = /\.(\w+)$/.exec(filename);
-    const type = match ? `image/${match[1]}` : `image`;
-
-    console.log("Información de la imagen seleccionada:", { localUri, filename, type });
-
-    const formData = new FormData();
-    formData.append('photo', {
-      uri: localUri,
-      name: filename,
-      type,
-    });
-
     try {
+      let base64Image;
+
+      if (Platform.OS === 'web') {
+        alert('La carga de fotos en Base64 no está disponible en la web.');
+        return;
+      } else {
+        console.log("Leyendo imagen en Base64...");
+        base64Image = await FileSystem.readAsStringAsync(selectedAsset.uri, {
+          encoding: FileSystem.EncodingType.Base64,
+        });
+      }
+
+      const payload = {
+        image: `data:image/jpeg;base64,${base64Image}`, // Cambia "jpeg" si tu imagen es de otro tipo
+      };
+
       console.log("Enviando solicitud POST al backend para subir la imagen...");
       const response = await fetch(`${apiUrl}/api/v1/events/${eventId}/upload_photo`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'multipart/form-data',
+          'Content-Type': 'application/json',
         },
-        body: formData,
+        body: JSON.stringify(payload),
       });
 
       const responseData = await response.json();
@@ -173,12 +173,8 @@ const uploadPhoto = async (eventId) => {
       console.error('Error al subir la foto:', error);
       alert('Hubo un error al subir la foto');
     }
-  } else {
-    console.log("No se encontró URI en el resultado de la imagen.");
-    alert("Hubo un problema al seleccionar la imagen.");
   }
 };
-
 
   if (loading) {
     return (
