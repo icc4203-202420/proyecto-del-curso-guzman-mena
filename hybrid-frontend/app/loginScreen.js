@@ -4,6 +4,7 @@ import axios from 'axios';
 import { useNavigation } from '@react-navigation/native';
 import { REACT_APP_API_URL } from '@env';
 import { saveItem, getItem, deleteItem } from "../util/Storage";
+import { registerForPushNotificationsAsync } from "../util/Notifications";
 
 export default function LoginScreen() {
   const navigation = useNavigation();
@@ -33,6 +34,9 @@ export default function LoginScreen() {
 
     setLoading(true);
     try {
+
+      // const pushToken = await registerForPushNotificationsAsync();
+
       const response = await axios.post(`${apiUrl}/api/v1/login`, {
         user: { email, password },
       });
