@@ -16,7 +16,10 @@ class API::V1::UsersController < ApplicationController
           }
         },
         friendships: {
-          include: { friend: { only: [:id, :first_name, :last_name] } }
+          include: { 
+            friend: { only: [:id, :first_name, :last_name] },
+            first_shared_event: { only: [:id, :name, :date] } # Incluye solo si existe
+          }
         },
         address: { only: [:line1, :line2, :city, :country] }
       }),
@@ -48,7 +51,7 @@ class API::V1::UsersController < ApplicationController
   def search
     handle = params[:handle]
     if handle.present?
-      users = User.where("LOWER(handle) LIKE ?", "%#{handle.downcase}%") # Conversión a minúsculas para búsqueda insensible
+      users = User.where("LOWER(handle) LIKE ?", "%#{handle.downcase}%")
       render json: { users: users }, status: :ok
     else
       render json: { error: 'No handle provided' }, status: :bad_request
@@ -60,6 +63,22 @@ class API::V1::UsersController < ApplicationController
 
   def set_user
     @user = User.find(params[:id])
+    # Carga amistades con el evento compartido si existe, sino asigna nil
+    @user.friendships.each do |friendship|
+      if friendship.friend
+        shared_event = find_first_shared_event(@user, friendship.friend)
+        friendship.define_singleton_method(:first_shared_event) { shared_event }
+      end
+    end
+  end
+
+  # Encuentra el primer evento compartido entre dos usuarios
+  def find_first_shared_event(user1, user2)
+    Event.joins(:attendances)
+         .where(attendances: { user_id: user1.id })
+         .where(id: Attendance.select(:event_id).where(user_id: user2.id))
+         .order(:date)
+         .first
   end
 
   def user_params

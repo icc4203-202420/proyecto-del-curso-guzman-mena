@@ -39,7 +39,10 @@ export default function ProfileIndex() {
             email: data.email,
             age: data.age,
             reviews: data.reviews || [],
-            friends: data.friendships?.map(friendship => friendship.friend) || [],
+            friends: data.friendships?.map(friendship => ({
+              ...friendship.friend,
+              first_shared_event: friendship.first_shared_event
+            })) || [],
           });
         } else {
           console.error('Error al obtener datos del usuario:', response.status);
@@ -104,7 +107,6 @@ export default function ProfileIndex() {
       setError('Error al agregar amigo.');
     }
   };
-  
 
   return (
     <ScrollView style={styles.container}>
@@ -123,6 +125,13 @@ export default function ProfileIndex() {
               user.friends.map((friend, index) => (
                 <View key={index} style={styles.friendCard}>
                   <Text>{`${friend.first_name} ${friend.last_name}`}</Text>
+                  {friend.first_shared_event ? (
+                    <Text style={styles.eventInfo}>
+                      Primer evento compartido: {friend.first_shared_event.name} - {friend.first_shared_event.date}
+                    </Text>
+                  ) : (
+                    <Text style={styles.noEventInfo}>No tienen eventos compartidos.</Text>
+                  )}
                 </View>
               ))
             ) : (
@@ -227,6 +236,16 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     backgroundColor: '#f9f9f9',
     marginBottom: 5,
+  },
+  eventInfo: {
+    fontSize: 12,
+    color: '#333',
+    marginTop: 5,
+  },
+  noEventInfo: {
+    fontSize: 12,
+    color: '#999',
+    marginTop: 5,
   },
   reviewCard: {
     backgroundColor: '#f0f0f0',
