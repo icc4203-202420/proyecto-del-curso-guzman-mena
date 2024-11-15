@@ -38,7 +38,11 @@ Rails.application.routes.draw do
       # Rutas para friendships
       resources :friendships, only: [:create, :index, :destroy]
       
-      resources :reviews, only: [:index, :show, :create, :update, :destroy]
+      resources :reviews, only: [:index, :show, :create, :update, :destroy] do
+        collection do
+          get :all_reviews  # Ruta personalizada para obtener todas las reseñas
+        end
+      end
     end
   end
 end

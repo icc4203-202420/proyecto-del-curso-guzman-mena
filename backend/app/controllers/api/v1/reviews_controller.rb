@@ -40,6 +40,10 @@ class API::V1::ReviewsController < ApplicationController
     @review.destroy
     head :no_content
   end
+  def all_reviews
+    @reviews = Review.order(created_at: :desc)
+    render json: { reviews: @reviews }, status: :ok
+  end
 
   private
 

@@ -1,8 +1,9 @@
+// src/feed/index.js
 import React from 'react';
 import { SafeAreaView } from 'react-native';
 import ActivitySubscriber from './ActivitySubscriber';
 
-const App = () => {
+const Feed = () => {
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <ActivitySubscriber />
@@ -10,4 +11,4 @@ const App = () => {
   );
 };
 
-export default App;
+export default Feed;

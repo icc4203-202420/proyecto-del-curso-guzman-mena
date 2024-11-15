@@ -1,4 +1,4 @@
-// src/components/ActivitySubscriber.js
+// src/feed/ActivitySubscriber.js
 import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, StyleSheet } from 'react-native';
 import consumer from './consumer';
@@ -7,7 +7,20 @@ const ActivitySubscriber = () => {
   const [activities, setActivities] = useState([]);
 
   useEffect(() => {
-    // Crear la suscripción al canal "FriendActivityChannel"
+    // Llamada inicial para obtener todas las reseñas
+    const fetchAllReviews = async () => {
+      try {
+        const response = await fetch(`${REACT_APP_API_WL}/api/v1/reviews/all_reviews`);
+        const data = await response.json();
+        setActivities(data.reviews); // Suponiendo que `data.reviews` contiene un array de reseñas
+      } catch (error) {
+        console.error('Error fetching all reviews:', error);
+      }
+    };
+
+    fetchAllReviews();
+
+    // Crear la suscripción al canal "FriendActivityChannel" para recibir actualizaciones en tiempo real
     const subscription = consumer.subscriptions.create(
       { channel: 'FriendActivityChannel' },
       {
@@ -19,7 +32,7 @@ const ActivitySubscriber = () => {
         },
         received(data) {
           console.log('Datos recibidos:', data);
-          // Actualizar la lista de actividades con los datos recibidos
+          // Agregar la nueva actividad al principio de la lista
           setActivities((prevActivities) => [data.activity, ...prevActivities]);
         },
       }
@@ -33,11 +46,15 @@ const ActivitySubscriber = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Actividades en Tiempo Real</Text>
+      <Text style={styles.title}>Feed de Reseñas de Usuarios</Text>
       <FlatList
         data={activities}
         keyExtractor={(item, index) => index.toString()}
-        renderItem={({ item }) => <Text style={styles.activity}>{item}</Text>}
+        renderItem={({ item }) => (
+          <Text style={styles.activity}>
+            {item.user_name} calificó {item.beer_name} con {item.rating} estrellas: "{item.text}"
+          </Text>
+        )}
       />
     </View>
   );
@@ -63,5 +80,3 @@ const styles = StyleSheet.create({
 });
 
 export default ActivitySubscriber;
-
-
