@@ -40,8 +40,29 @@ class API::V1::ReviewsController < ApplicationController
     @review.destroy
     head :no_content
   end
+
   def all_reviews
-    @reviews = Review.order(created_at: :desc)
+    user_id = params[:user_id] # Recibe el ID del usuario actual
+    user = User.find(user_id)
+  
+    # Obtener los IDs de los amigos del usuario actual
+    friend_ids = user.friends.pluck(:id)
+  
+    # Filtrar reseñas hechas por los amigos
+    @reviews = Review.includes(:user, :beer)
+                     .where(user_id: friend_ids)
+                     .order(created_at: :desc)
+                     .map do |review|
+      {
+        id: review.id,
+        user_name: review.user.first_name,
+        beer_name: review.beer.name,
+        rating: review.rating,
+        text: review.text,
+        created_at: review.created_at
+      }
+    end
+
     render json: { reviews: @reviews }, status: :ok
   end
 

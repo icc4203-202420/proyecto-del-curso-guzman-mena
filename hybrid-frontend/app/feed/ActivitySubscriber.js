@@ -1,59 +1,54 @@
 // src/feed/ActivitySubscriber.js
 import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, StyleSheet } from 'react-native';
-import consumer from './consumer';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
+import { REACT_APP_API_WL } from '@env';
 
 const ActivitySubscriber = () => {
   const [activities, setActivities] = useState([]);
 
+  // Llamar al backend para obtener las reseñas de amigos
+  const fetchFriendReviews = async () => {
+    try {
+      const userId = await AsyncStorage.getItem('userId'); // Obtener el ID del usuario actual
+      if (!userId) {
+        console.error('No se encontró el ID del usuario.');
+        return;
+      }
+
+      const response = await axios.get(`${REACT_APP_API_WL}/api/v1/reviews/all_reviews`, {
+        params: { user_id: userId }, // Enviar el ID del usuario como parámetro
+      });
+
+      if (response.status === 200) {
+        setActivities(response.data.reviews || []);
+      } else {
+        console.error('Error al obtener reseñas de amigos:', response.status);
+      }
+    } catch (error) {
+      console.error('Error al obtener reseñas de amigos:', error);
+    }
+  };
+
   useEffect(() => {
-    // Llamada inicial para obtener todas las reseñas
-    const fetchAllReviews = async () => {
-      try {
-        const response = await fetch(`${REACT_APP_API_WL}/api/v1/reviews/all_reviews`);
-        const data = await response.json();
-        setActivities(data.reviews); // Suponiendo que `data.reviews` contiene un array de reseñas
-      } catch (error) {
-        console.error('Error fetching all reviews:', error);
-      }
-    };
-
-    fetchAllReviews();
-
-    // Crear la suscripción al canal "FriendActivityChannel" para recibir actualizaciones en tiempo real
-    const subscription = consumer.subscriptions.create(
-      { channel: 'FriendActivityChannel' },
-      {
-        connected() {
-          console.log('Conectado al canal FriendActivityChannel');
-        },
-        disconnected() {
-          console.log('Desconectado del canal FriendActivityChannel');
-        },
-        received(data) {
-          console.log('Datos recibidos:', data);
-          // Agregar la nueva actividad al principio de la lista
-          setActivities((prevActivities) => [data.activity, ...prevActivities]);
-        },
-      }
-    );
-
-    // Limpiar la suscripción cuando el componente se desmonte
-    return () => {
-      subscription.unsubscribe();
-    };
+    fetchFriendReviews();
   }, []);
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Feed de Reseñas de Usuarios</Text>
+      <Text style={styles.title}>Feed de Reseñas de Amigos</Text>
       <FlatList
         data={activities}
-        keyExtractor={(item, index) => index.toString()}
+        keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
-          <Text style={styles.activity}>
-            {item.user_name} calificó {item.beer_name} con {item.rating} estrellas: "{item.text}"
-          </Text>
+          <View style={styles.reviewCard}>
+            <Text style={styles.reviewTitle}>
+              {item.user_name} calificó {item.beer_name}
+            </Text>
+            <Text style={styles.reviewRating}>Calificación: {item.rating}</Text>
+            <Text style={styles.reviewContent}>{item.text}</Text>
+          </View>
         )}
       />
     </View>
@@ -71,11 +66,24 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 10,
   },
-  activity: {
+  reviewCard: {
+    backgroundColor: '#f0f0f0',
     padding: 10,
-    backgroundColor: '#ddd',
-    marginBottom: 5,
-    borderRadius: 5,
+    borderRadius: 8,
+    marginVertical: 5,
+  },
+  reviewTitle: {
+    fontWeight: 'bold',
+  },
+  reviewRating: {
+    marginTop: 5,
+    fontSize: 14,
+    color: '#555',
+  },
+  reviewContent: {
+    marginTop: 5,
+    fontSize: 12,
+    color: '#777',
   },
 });
 
