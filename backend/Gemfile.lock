@@ -130,6 +130,15 @@ GEM
       railties (>= 5.0.0)
     faker (3.4.2)
       i18n (>= 1.8.11, < 2)
+    faraday (2.12.1)
+      faraday-net_http (>= 2.0, < 3.5)
+      json
+      logger
+    faraday-net_http (3.4.0)
+      net-http (>= 0.5.0)
+    faraday-net_http_persistent (2.3.0)
+      faraday (~> 2.5)
+      net-http-persistent (>= 4.0.4, < 5)
     ffi (1.17.0-aarch64-linux-gnu)
     ffi (1.17.0-arm-linux-gnu)
     ffi (1.17.0-arm64-darwin)
@@ -150,6 +159,7 @@ GEM
     jbuilder (2.12.0)
       actionview (>= 5.0.0)
       activesupport (>= 5.0.0)
+    json (2.8.2)
     jsonapi-serializer (2.2.0)
       activesupport (>= 4.2)
     jwt (2.8.2)
@@ -170,6 +180,10 @@ GEM
     minitest (5.24.1)
     msgpack (1.7.2)
     mutex_m (0.2.0)
+    net-http (0.5.0)
+      uri
+    net-http-persistent (4.0.4)
+      connection_pool (~> 2.2)
     net-imap (0.4.14)
       date
       net-protocol
@@ -290,12 +304,18 @@ GEM
     sqlite3 (1.7.3-x86-linux)
     sqlite3 (1.7.3-x86_64-darwin)
     sqlite3 (1.7.3-x86_64-linux)
+    stream-ruby (5.1.0)
+      faraday
+      faraday-net_http_persistent
+      jwt
+      net-http-persistent
     stringio (3.1.1)
     strscan (3.1.0)
     thor (1.3.1)
     timeout (0.4.1)
     tzinfo (2.0.6)
       concurrent-ruby (~> 1.0)
+    uri (1.0.2)
     warden (1.2.9)
       rack (>= 2.0.9)
     warden-jwt_auth (0.10.0)
@@ -340,6 +360,7 @@ DEPENDENCIES
   rails-erd
   rspec-rails
   sqlite3 (~> 1.4)
+  stream-ruby
   tzinfo-data
 
 RUBY VERSION

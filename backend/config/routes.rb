@@ -43,6 +43,9 @@ Rails.application.routes.draw do
           get :all_reviews  # Ruta personalizada para obtener todas las reseñas
         end
       end
+
+      # Nueva ruta para generar el token del usuario en Stream
+      get 'stream/token', to: 'stream#generate_token'
     end
   end
 end
