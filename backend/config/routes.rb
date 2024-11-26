@@ -16,7 +16,7 @@ Rails.application.routes.draw do
       resources :bars do
         resources :events, only: [:index, :create]
       end
-  
+
       resources :events do
         resources :attendances, only: [:create, :index]
         member do
@@ -24,23 +24,24 @@ Rails.application.routes.draw do
           post :upload_photo
         end
       end
-  
+
       resources :beers do
         resources :reviews, only: [:index, :create]
       end
-  
+
       resources :users do
         collection do
           get 'search', to: 'users#search'
         end
       end
-  
+
       # Rutas para friendships
       resources :friendships, only: [:create, :index, :destroy]
       
       resources :reviews, only: [:index, :show, :create, :update, :destroy] do
         collection do
           get :all_reviews  # Ruta personalizada para obtener todas las reseñas
+          get :recent_reviews # Nueva ruta para obtener las reseñas más recientes
         end
       end
 

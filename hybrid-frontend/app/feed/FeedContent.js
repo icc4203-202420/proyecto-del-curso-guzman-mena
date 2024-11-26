@@ -1,33 +1,70 @@
 // src/feed/FeedContent.js
 import React from 'react';
+import { View, Text, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
+import { useRouter } from 'expo-router';
 
-import { View, Text, StyleSheet } from 'react-native';
+const FeedContent = ({ activities }) => {
+  const router = useRouter();
 
-const FeedContent = () => {
+  const renderItem = ({ item }) => (
+    <TouchableOpacity
+      style={styles.activityCard}
+      onPress={() => {
+        if (item.type === 'review') {
+          router.push(`/beers/${item.beer_id}`);
+        } else if (item.type === 'event') {
+          router.push(`/bars/${item.bar_id}/events/${item.event_id}`);
+        }
+      }}
+    >
+      <Text style={styles.activityText}>
+        {item.user_name ? `${item.user_name} calificó` : 'Un amigo calificó'}{' '}
+        {item.beer_name || 'una cerveza'} con {item.rating || 'N/A'} estrellas.
+      </Text>
+      {item.text && <Text style={styles.activityDetails}>{item.text}</Text>}
+    </TouchableOpacity>
+  );
+
   return (
-    <FlatFeed
-      notify
-      feedGroup="timeline" // Cambia "timeline" si usas otro grupo de feed en Stream
-      options={{ limit: 25 }} // Configura el límite de actividades a obtener
-      Activity={(props) => (
-        <View style={styles.activityContainer}>
-          <Text style={styles.activityText}>
-            {props.activity.actor} calificó {props.activity.object} con {props.activity.rating} estrellas.
-          </Text>
-        </View>
-      )}
+    <FlatList
+      data={activities}
+      keyExtractor={(item) => item.id.toString()}
+      renderItem={renderItem}
+      contentContainerStyle={styles.listContainer}
+      ListEmptyComponent={<Text style={styles.emptyText}>No hay actividades disponibles.</Text>}
     />
   );
 };
 
 const styles = StyleSheet.create({
-  activityContainer: {
+  listContainer: {
     padding: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ddd',
+  },
+  activityCard: {
+    backgroundColor: '#fff',
+    padding: 15,
+    borderRadius: 10,
+    marginBottom: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+    elevation: 3,
   },
   activityText: {
+    fontWeight: 'bold',
     fontSize: 16,
+  },
+  activityDetails: {
+    marginTop: 5,
+    fontSize: 14,
+    color: '#666',
+  },
+  emptyText: {
+    textAlign: 'center',
+    marginTop: 20,
+    fontSize: 16,
+    color: '#aaa',
   },
 });
 

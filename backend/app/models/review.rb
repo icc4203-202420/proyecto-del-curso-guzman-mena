@@ -9,24 +9,37 @@ class Review < ApplicationRecord
   after_save :update_beer_rating
   after_destroy :update_beer_rating
   after_create :publish_activity
+  after_create :broadcast_activity
 
   private
 
-
   def publish_activity
-    client = Stream::Client.new(ENV['STREAM_API_KEY'], ENV['STREAM_API_SECRET'])
-    feed = client.feed('timeline', user_id.to_s)
-
-    feed.add_activity(
-      actor: "User:#{user_id}",
-      verb: "reviewed",
-      object: "Beer:#{beer_id}",
-      rating: rating,
-      foreign_id: "Review:#{id}",
-      time: created_at.iso8601
+    ActionCable.server.broadcast("friend_activity_channel", {
+      activity: {
+        id: id,
+        user_name: user.first_name,
+        beer_name: beer.name,
+        rating: rating,
+        text: text,
+        created_at: created_at.iso8601
+      }
+    })
+  end
+  def broadcast_activity
+    ActionCable.server.broadcast(
+      "friend_activity_channel",
+      {
+        activity: {
+          id: id,
+          user_name: user.first_name,
+          beer_name: beer.name,
+          text: text,
+          rating: rating,
+          created_at: created_at
+        }
+      }
     )
   end
-
 
   def update_beer_rating
     beer.update_avg_rating
