@@ -1,9 +1,11 @@
 import { View, StyleSheet, ScrollView, TextInput } from 'react-native';
 import { Text, Avatar, Card, Button, Title } from 'react-native-paper';
 import React, { useState, useEffect } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
-// import { useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
+
+import { saveItem, getItem, deleteItem } from "../../util/Storage";
+
 import axios from 'axios';
 import { REACT_APP_API_URL } from '@env';
 
@@ -27,7 +29,7 @@ export default function ProfileIndex() {
 
   const fetchUserData = async () => {
     try {
-      const storedUserId = await AsyncStorage.getItem('userId');
+      const storedUserId = await getItem('userId');
       if (storedUserId) {
         const response = await axios.get(`${apiUrl}/api/v1/users/${storedUserId}`);
         if (response.status === 200) {
@@ -54,6 +56,7 @@ export default function ProfileIndex() {
   };
 
   useEffect(() => {
+    
     fetchUserData();
   }, []);
   
