@@ -66,12 +66,9 @@ export default function ProfileIndex() {
         fetchUserData();
       }
     };
-
-    const interval = setInterval(checkUserIdChange, 1000); // Revisar cada 1 segundo por cambios
-
-    return () => clearInterval(interval); // Limpiar el intervalo cuando el componente se desmonte
-  }, [user.id]); // Revisa el cambio solo cuando el `user.id` cambie
-
+    const interval = setInterval(checkUserIdChange, 1000);
+    return () => clearInterval(interval); 
+  }, [user.id]); 
 
 
 
