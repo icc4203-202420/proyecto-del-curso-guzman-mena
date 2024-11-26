@@ -3,12 +3,12 @@ import { Text, Avatar, Card, Button, Title } from 'react-native-paper';
 import React, { useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
-import { useRouter } from 'expo-router';
+// import { useRouter } from 'expo-router';
 import axios from 'axios';
 import { REACT_APP_API_URL } from '@env';
 
 export default function ProfileIndex() {
-  const router = useRouter();
+  // const router = useRouter();
   const apiUrl = REACT_APP_API_URL;
 
   const [user, setUser] = useState({
@@ -53,11 +53,11 @@ export default function ProfileIndex() {
     }
   };
 
-  useFocusEffect(
-    React.useCallback(() => {
-      fetchUserData();
-    }, [])
-  );
+  // useFocusEffect(                    # tira error en android
+  //   React.useCallback(() => {
+  //     fetchUserData();
+  //   }, [])
+  // );
 
   const searchUserByHandle = async (handle) => {
     try {

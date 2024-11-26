@@ -1,13 +1,22 @@
-import React, { useState } from 'react';
-import { Text, View, TextInput, Button, ActivityIndicator, StyleSheet } from 'react-native';
-import axios from 'axios';
-import { useNavigation } from '@react-navigation/native';
+import { Text, View, TextInput, Button, ActivityIndicator, StyleSheet, Alert } from 'react-native';
 import { REACT_APP_API_URL } from '@env';
-import { saveItem, getItem, deleteItem } from "../util/Storage";
+import React, { useState } from 'react';
+import {useRouter } from 'expo-router'
+import axios from 'axios';
+
 import { registerForPushNotificationsAsync } from "../util/Notifications";
+import { saveItem, getItem, deleteItem } from "../util/Storage";
+
+// NUEVAS
+import Constants from 'expo-constants'; 
+import AsyncStorage from '@react-native-async-storage/async-storage'; // Verifica que esta librería esté instalada
+
+
+
+
 
 export default function LoginScreen() {
-  const navigation = useNavigation();
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -54,7 +63,7 @@ export default function LoginScreen() {
         await saveItem("userId",  currentUser.toString());
         setMessage('You have logged in successfully');
         setMessageType('success');
-        navigation.navigate('index');
+        router.push('/');
       } else {
         setMessage(response.data.status.message || 'Invalid credentials');
         setMessageType('error');
