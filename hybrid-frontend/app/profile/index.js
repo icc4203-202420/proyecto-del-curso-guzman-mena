@@ -56,10 +56,25 @@ export default function ProfileIndex() {
   };
 
   useEffect(() => {
-    
     fetchUserData();
   }, []);
   
+  useEffect(() => {
+    const checkUserIdChange = async () => {
+      const storedUserId = await getItem('userId');
+      if (storedUserId && storedUserId !== user.id) {
+        fetchUserData();
+      }
+    };
+
+    const interval = setInterval(checkUserIdChange, 1000); // Revisar cada 1 segundo por cambios
+
+    return () => clearInterval(interval); // Limpiar el intervalo cuando el componente se desmonte
+  }, [user.id]); // Revisa el cambio solo cuando el `user.id` cambie
+
+
+
+
   const searchUserByHandle = async (handle) => {
     try {
       const response = await axios.get(`${apiUrl}/api/v1/users/search?handle=${handle}`);
