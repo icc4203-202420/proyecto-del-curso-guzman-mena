@@ -4,15 +4,8 @@ import React, { useState } from 'react';
 import {useRouter } from 'expo-router'
 import axios from 'axios';
 
-import { registerForPushNotificationsAsync } from "../util/Notifications";
+// import { registerForPushNotificationsAsync } from "../util/Notifications";
 import { saveItem, getItem, deleteItem } from "../util/Storage";
-
-// NUEVAS
-import Constants from 'expo-constants'; 
-import AsyncStorage from '@react-native-async-storage/async-storage'; // Verifica que esta librería esté instalada
-
-
-
 
 
 export default function LoginScreen() {
@@ -43,14 +36,14 @@ export default function LoginScreen() {
 
     setLoading(true);
 
-    try {
-      const pushToken = await registerForPushNotificationsAsync();
-      console.log(pushToken)
+    // try {
+    //   const pushToken = await registerForPushNotificationsAsync();
+    //   console.log(pushToken)
 
-    } catch (e) {
-      console.log(e)
+    // } catch (e) {
+    //   console.log(e)
 
-    }
+    // }
     try {
 
 

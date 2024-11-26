@@ -28,11 +28,11 @@ export default function ProfileIndex() {
   const fetchUserData = async () => {
     try {
       const storedUserId = await AsyncStorage.getItem('userId');
-      
       if (storedUserId) {
         const response = await axios.get(`${apiUrl}/api/v1/users/${storedUserId}`);
         if (response.status === 200) {
           const data = response.data;
+          
           setUser({
             id: data.id,
             name: `${data.first_name} ${data.last_name}`,
@@ -53,12 +53,10 @@ export default function ProfileIndex() {
     }
   };
 
-  // useFocusEffect(                    # tira error en android
-  //   React.useCallback(() => {
-  //     fetchUserData();
-  //   }, [])
-  // );
-
+  useEffect(() => {
+    fetchUserData();
+  }, []);
+  
   const searchUserByHandle = async (handle) => {
     try {
       const response = await axios.get(`${apiUrl}/api/v1/users/search?handle=${handle}`);
