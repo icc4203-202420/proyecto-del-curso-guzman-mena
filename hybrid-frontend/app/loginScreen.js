@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import {useRouter } from 'expo-router'
 import axios from 'axios';
 
-// import { registerForPushNotificationsAsync } from "../util/Notifications";
+import { registerForPushNotificationsAsync } from "../util/Notifications";
 import { saveItem, getItem, deleteItem } from "../util/Storage";
 
 
@@ -36,19 +36,17 @@ export default function LoginScreen() {
 
     setLoading(true);
 
-    // try {
-    //   const pushToken = await registerForPushNotificationsAsync();
-    //   console.log(pushToken)
-
-    // } catch (e) {
-    //   console.log(e)
-
-    // }
+    try {
+      const pushToken = await registerForPushNotificationsAsync();
+      Alert(pushToken)
+    } catch (e) {
+      alert(e)
+    }
     try {
 
 
       const response = await axios.post(`${apiUrl}/api/v1/login`, {
-        user: { email, password },
+        user: { email, password, pushToken },
       });
 
       if (response.data.status.code === 200) {

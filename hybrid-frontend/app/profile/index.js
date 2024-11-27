@@ -1,7 +1,6 @@
 import { View, StyleSheet, ScrollView, TextInput } from 'react-native';
 import { Text, Avatar, Card, Button, Title } from 'react-native-paper';
 import React, { useState, useEffect } from 'react';
-import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 
 import { saveItem, getItem, deleteItem } from "../../util/Storage";
@@ -10,7 +9,6 @@ import axios from 'axios';
 import { REACT_APP_API_URL } from '@env';
 
 export default function ProfileIndex() {
-  // const router = useRouter();
   const apiUrl = REACT_APP_API_URL;
 
   const [user, setUser] = useState({
@@ -26,6 +24,7 @@ export default function ProfileIndex() {
   const [searchHandle, setSearchHandle] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [error, setError] = useState('');
+  const [reloadKey, setReloadKey] = useState(0); // Este valor se incrementará para forzar la recarga
 
   const fetchUserData = async () => {
     try {
@@ -55,21 +54,15 @@ export default function ProfileIndex() {
     }
   };
 
+ 
   useEffect(() => {
     fetchUserData();
-  }, []);
-  
-  useEffect(() => {
-    const checkUserIdChange = async () => {
-      const storedUserId = await getItem('userId');
-      if (storedUserId && storedUserId !== user.id) {
-        fetchUserData();
-      }
-    };
-    const interval = setInterval(checkUserIdChange, 1000);
-    return () => clearInterval(interval); 
-  }, [user.id]); 
+  }, [reloadKey]); 
 
+  
+  const handleReload = () => {
+    setReloadKey(prevKey => prevKey + 1);
+  };
 
 
   const searchUserByHandle = async (handle) => {
@@ -128,6 +121,10 @@ export default function ProfileIndex() {
         <Text style={styles.name}>{user.name}</Text>
         <Text style={styles.email}>{user.email}</Text>
       </View>
+
+      <Button mode="contained" onPress={handleReload} style={styles.button}>
+        Recargar Perfil
+      </Button>
 
       {/* Lista de Amigos */}
       <Card style={styles.card}>

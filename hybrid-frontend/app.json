@@ -1,6 +1,5 @@
 {
   "expo": {
-
     "name": "hybrid-frontend",
     "slug": "hybrid-frontend",
     "version": "1.0.0",
@@ -13,13 +12,15 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.daniel9091.hybridfrontend"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.daniel9091.hybridfrontend"
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -36,6 +37,5 @@
     },
     "owner": "daniel9091",
     "newArchEnabled": true
-
   }
 }
