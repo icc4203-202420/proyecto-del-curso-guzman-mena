@@ -1,4 +1,3 @@
-// src/feed/FeedContent.js
 import React from 'react';
 import { View, Text, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
@@ -6,24 +5,74 @@ import { useRouter } from 'expo-router';
 const FeedContent = ({ activities }) => {
   const router = useRouter();
 
-  const renderItem = ({ item }) => (
-    <TouchableOpacity
-      style={styles.activityCard}
-      onPress={() => {
-        if (item.type === 'review') {
-          router.push(`/beers/${item.beer_id}`);
-        } else if (item.type === 'event') {
-          router.push(`/bars/${item.bar_id}/events/${item.event_id}`);
-        }
-      }}
-    >
-      <Text style={styles.activityText}>
-        {item.user_name ? `${item.user_name} calificó` : 'Un amigo calificó'}{' '}
-        {item.beer_name || 'una cerveza'} con {item.rating || 'N/A'} estrellas.
-      </Text>
-      {item.text && <Text style={styles.activityDetails}>{item.text}</Text>}
-    </TouchableOpacity>
-  );
+  const renderItem = ({ item }) => {
+    console.log('Activity Item:', item); // Debug para verificar el contenido de `item`
+
+    return (
+      <View style={styles.activityCard}>
+        {/* Recuadro completo como botón para la cerveza */}
+        <TouchableOpacity
+          style={styles.cardButton}
+          onPress={() => {
+            if (item.type === 'review' && item.beer_id) {
+              router.push(`/beers/${item.beer_id}`);
+            } else {
+              console.error('Beer ID is missing or invalid:', item.beer_id);
+            }
+          }}
+        >
+          {/* Información principal */}
+          <Text style={styles.activityText}>
+            {item.user_name
+              ? `${item.user_name} calificó`
+              : 'Un amigo calificó'}{' '}
+            {item.beer_name || 'una cerveza'}{' '}
+            {item.rating ? `con ${item.rating} estrellas.` : ''}
+          </Text>
+
+          {/* Descripción adicional */}
+          {item.text && <Text style={styles.activityDetails}>{item.text}</Text>}
+
+          {/* Detalles adicionales */}
+          <View style={styles.detailsContainer}>
+            {/* Nombre del bar como texto con interacción */}
+            {item.bar_name && (
+              <Text
+                style={styles.barText}
+                onPress={() => {
+                  if (item.bar_id) {
+                    router.push(`/bars/${item.bar_id}`);
+                  } else {
+                    console.error('Bar ID is missing or invalid:', item.bar_id);
+                  }
+                }}
+              >
+                {item.bar_name}
+              </Text>
+            )}
+
+            {/* País y dirección */}
+            <Text style={styles.detail}>
+              <Text style={styles.label}>País:</Text>{' '}
+              {item.bar_country || 'No especificado'}
+            </Text>
+            <Text style={styles.detail}>
+              <Text style={styles.label}>Dirección:</Text>{' '}
+              {item.bar_address || 'No especificada'}
+            </Text>
+
+            {/* Promedio de evaluación */}
+            {item.avg_rating && (
+              <Text style={styles.detail}>
+                <Text style={styles.label}>Evaluación promedio:</Text>{' '}
+                {item.avg_rating.toFixed(2)}
+              </Text>
+            )}
+          </View>
+        </TouchableOpacity>
+      </View>
+    );
+  };
 
   return (
     <FlatList
@@ -51,14 +100,34 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     elevation: 3,
   },
+  cardButton: {
+    flex: 1,
+  },
   activityText: {
     fontWeight: 'bold',
     fontSize: 16,
+    marginBottom: 5,
   },
   activityDetails: {
-    marginTop: 5,
     fontSize: 14,
     color: '#666',
+    marginBottom: 5,
+  },
+  detailsContainer: {
+    marginTop: 10,
+  },
+  detail: {
+    fontSize: 14,
+    color: '#333',
+  },
+  label: {
+    fontWeight: 'bold',
+  },
+  barText: {
+    color: '#1e88e5', // Azul intenso
+    fontWeight: 'bold',
+    textDecorationLine: 'underline',
+    marginBottom: 5,
   },
   emptyText: {
     textAlign: 'center',

@@ -61,8 +61,30 @@ class API::V1::ReviewsController < ApplicationController
   # Nuevo método para obtener las reseñas más recientes
   def recent_reviews
     @reviews = Review.includes(:user, :beer).order(created_at: :desc).limit(10)
-    render json: { reviews: @reviews.map { |review| review_data(review) } }, status: :ok
+  
+    activities = @reviews.map do |review|
+      bar = review.beer.bars.first # Obtén el primer bar asociado a la cerveza, si existe
+      {
+        id: review.id,
+        type: 'review',
+        user_name: review.user.first_name,
+        beer_name: review.beer.name,
+        beer_id: review.beer.id, # Asegúrate de incluir el ID de la cerveza
+        rating: review.rating,
+        text: review.text,
+        created_at: review.created_at.iso8601,
+        bar_name: bar&.name,
+        bar_id: bar&.id, # Asegúrate de incluir el ID del bar
+        bar_country: bar&.address&.country&.name,
+        bar_address: bar&.address&.line1,
+        avg_rating: review.beer.avg_rating
+      }
+    end
+  
+    render json: { activities: activities }, status: :ok
   end
+  
+  
 
   private
 

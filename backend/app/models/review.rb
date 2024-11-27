@@ -14,14 +14,19 @@ class Review < ApplicationRecord
   private
 
   def publish_activity
+    bar = beer.bars.first
     ActionCable.server.broadcast("friend_activity_channel", {
       activity: {
         id: id,
+        type: 'review',
         user_name: user.first_name,
         beer_name: beer.name,
         rating: rating,
         text: text,
-        created_at: created_at.iso8601
+        created_at: created_at.iso8601,
+        bar_name: bar&.name,
+        bar_country: bar&.address&.country&.name,
+        bar_address: bar&.address&.line1
       }
     })
   end
