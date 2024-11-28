@@ -22,6 +22,8 @@ Rails.application.routes.draw do
         member do
           post :upload_images
           post :upload_photo
+          get :photo_index
+
         end
       end
 

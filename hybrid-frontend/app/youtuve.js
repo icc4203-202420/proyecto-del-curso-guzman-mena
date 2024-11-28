@@ -50,7 +50,7 @@ const Home = () => {
       const payload = {
         image: base64,
       };
-
+    
       const apiUrl = "http://192.168.0.123:3001/api/v1/events/1/upload_photo";
 
       // Enviar la imagen al backend como JSON
