@@ -1,16 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, ActivityIndicator, ScrollView, Alert } from 'react-native';
-import { Text, Card, Title, Paragraph, Button } from 'react-native-paper';
+import { View, StyleSheet, ActivityIndicator, ScrollView, Alert, Text } from 'react-native';
+import { Text as PaperText, Card, Title, Paragraph, Button } from 'react-native-paper';
 import axios from 'axios';
-import { useLocalSearchParams, useRouter } from 'expo-router'; 
-import * as ImagePicker from 'expo-image-picker';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { REACT_APP_API_URL } from '@env';
-import { saveItem, getItem, deleteItem } from "../../util/Storage";
-import * as FileSystem from 'expo-file-system';
-import { Platform } from 'react-native';
+import { getItem } from "../../util/Storage";
 
 export default function BarsShow() {
   const { bar_id } = useLocalSearchParams();
+  const router = useRouter();
   const [userId, setUserId] = useState(null); 
   const [bar, setBar] = useState(null);
   const [events, setEvents] = useState([]); 
@@ -32,8 +30,6 @@ export default function BarsShow() {
     fetchUserId();
   }, []);
 
-
-
   useEffect(() => {
     const fetchBarDetails = async () => {
       try {
@@ -50,35 +46,33 @@ export default function BarsShow() {
     fetchBarDetails();
   }, [bar_id]);
 
-
   const fetchAttendances = async (eventId) => {
     try {
       const response = await axios.get(`${apiUrl}/api/v1/events/${eventId}/attendances`);
-      setAttendances(prevAttendances => ({
+      setAttendances((prevAttendances) => ({
         ...prevAttendances,
-        [eventId]: response.data.attendees || []
+        [eventId]: response.data.attendees || [],
       }));
 
       if (userId) {
-        const userAttendance = response.data.attendees.some(attendance => attendance.user_id.toString() === userId.toString());
-        setUserAttendanceStatus(prevStatus => ({
+        const userAttendance = response.data.attendees.some(
+          (attendance) => attendance.user_id.toString() === userId.toString()
+        );
+        setUserAttendanceStatus((prevStatus) => ({
           ...prevStatus,
-          [eventId]: userAttendance
+          [eventId]: userAttendance,
         }));
       }
-
     } catch (error) {
       console.error(`Error al cargar asistentes del evento ${eventId}:`, error);
     }
   };
 
-  // Cargar asistencias para cada evento
   useEffect(() => {
-    events.forEach(event => {
+    events.forEach((event) => {
       fetchAttendances(event.id);
     });
   }, [events]);
-
 
   const handleAttendance = async (eventId) => {
     if (!userId) {
@@ -90,97 +84,26 @@ export default function BarsShow() {
 
     try {
       if (isAttending) {
-        // Desconfirmar asistencia
         await axios.delete(`${apiUrl}api/v1/events/${eventId}/attendances/${userId}`);
       } else {
-        // Confirmar asistencia
         await axios.post(`${apiUrl}/api/v1/events/${eventId}/attendances`, { user_id: userId });
       }
       
-      // Actualizar el estado de asistencia y recargar la lista de asistentes
-      setUserAttendanceStatus(prevStatus => ({
+      setUserAttendanceStatus((prevStatus) => ({
         ...prevStatus,
-        [eventId]: !isAttending
+        [eventId]: !isAttending,
       }));
-      fetchAttendances(eventId); // Recargar lista de asistentes
-
+      fetchAttendances(eventId);
     } catch (error) {
       console.error('Error al cambiar el estado de asistencia:', error);
     }
   };
 
-// Función para subir foto
-const uploadPhoto = async (eventId) => {
-  console.log(`Intentando subir foto para el evento: ${eventId}`);
-
-  const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-  if (!permissionResult.granted) {
-    alert("Se requiere permiso para acceder a la galería de imágenes.");
-    console.log("Permisos denegados para acceder a la galería.");
-    return;
-  }
-
-  const result = await ImagePicker.launchImageLibraryAsync({
-    mediaTypes: ImagePicker.MediaTypeOptions.Images,
-    allowsEditing: true,
-    quality: 1,
-  });
-
-  if (result.canceled) {
-    alert("No se seleccionó ninguna imagen.");
-    return;
-  }
-
-  const selectedAsset = result.assets && result.assets[0];
-  if (selectedAsset && selectedAsset.uri) {
-    try {
-      let base64Image;
-
-      if (Platform.OS === 'web') {
-        alert('La carga de fotos en Base64 no está disponible en la web.');
-        return;
-      } else {
-        console.log("Leyendo imagen en Base64...");
-        base64Image = await FileSystem.readAsStringAsync(selectedAsset.uri, {
-          encoding: FileSystem.EncodingType.Base64,
-        });
-      }
-
-      const payload = {
-        image: `data:image/jpeg;base64,${base64Image}`, // Cambia "jpeg" si tu imagen es de otro tipo
-      };
-
-      console.log("Enviando solicitud POST al backend para subir la imagen...");
-      const response = await fetch(`${apiUrl}/api/v1/events/${eventId}/upload_photo`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
-
-      const responseData = await response.json();
-      console.log("Respuesta del servidor:", responseData);
-
-      if (response.ok) {
-        console.log('Foto subida exitosamente:', responseData);
-        alert(`Foto subida exitosamente. Ruta del archivo: ${responseData.path}`);
-      } else {
-        console.error('Error al subir la foto:', responseData);
-        alert(`Error al subir la foto: ${responseData.error || 'Error desconocido'}`);
-      }
-    } catch (error) {
-      console.error('Error al subir la foto:', error);
-      alert('Hubo un error al subir la foto');
-    }
-  }
-};
-
   if (loading) {
     return (
       <View style={styles.loaderContainer}>
         <ActivityIndicator size="large" color="#6200ee" />
-        <Text>Cargando ...</Text>
+        <PaperText>Cargando ...</PaperText>
       </View>
     );
   }
@@ -188,7 +111,7 @@ const uploadPhoto = async (eventId) => {
   if (error) {
     return (
       <View style={styles.loaderContainer}>
-        <Text style={styles.errorText}>{error}</Text>
+        <PaperText style={styles.errorText}>{error}</PaperText>
       </View>
     );
   }
@@ -204,83 +127,45 @@ const uploadPhoto = async (eventId) => {
               <Paragraph>Longitude: {bar.longitude}</Paragraph>
             </Card.Content>
           </Card>
-
-          <Card style={styles.card}>
-            <Card.Content>
-              <Title>Dirección</Title>
-              <Paragraph>Línea 1: {bar.address?.line1}</Paragraph>
-              <Paragraph>Línea 2: {bar.address?.line2 || 'N/A'}</Paragraph>
-              <Paragraph>Ciudad: {bar.address?.city}</Paragraph>
-              <Paragraph>País: {bar.address?.country?.name}</Paragraph>
-            </Card.Content>
-          </Card>
         </>
       )}
 
       <Card style={styles.card}>
-      <Card.Content>
-        <Title>Events</Title>
-        <ScrollView contentContainerStyle={styles.scrollContainer}>
-          {events.length > 0 ? (
-            events.map((event, index) => (
-              <Card key={index} style={styles.eventCard}>
-                <Title style={styles.reviewTitle}>{`${event.name}`}</Title>
-                <ScrollView contentContainerStyle={styles.scrollContainer}>
-                <Text>Description: {event.description}</Text>
-                <Text>Date: {event.date}</Text>
-                <Text>Cofirmed:</Text>
-                 {/* Mostrar los handles confirmados */}
-                 <Card style={styles.card}>
-                    <Card.Content>
-                      <ScrollView contentContainerStyle={styles.scrollContainer}>
-                        {attendances[event.id] && attendances[event.id].length > 0 ? (
-                          attendances[event.id].map((attendance, idx) => (
-                            <Text key={idx}>{attendance.first_name + " " +attendance.last_name}</Text> 
-                          ))
-                        ) : (
-                          <Text>No attendees confirmed yet.</Text>
-                        )}
-                      </ScrollView>
-                    </Card.Content>
-                  </Card>
+        <Card.Content>
+          <Title>Events</Title>
+          <ScrollView contentContainerStyle={styles.scrollContainer}>
+            {events.length > 0 ? (
+              events.map((event, index) => (
+                <Card key={index} style={styles.eventCard}>
+                  <Title style={styles.reviewTitle}>{event.name}</Title>
+                  <Text>Description: {event.description}</Text>
+                  <Text>Date: {event.date}</Text>
 
-                <Button 
-                  mode="contained" 
-                  onPress={() => handleAttendance(event.id)} 
-                  style={styles.button}>
-                  {userAttendanceStatus[event.id] ? 'Desconfirmar Asistencia' : 'Confirmar Asistencia'}
-                </Button>
+                  <Button 
+                    mode="contained" 
+                    onPress={() => handleAttendance(event.id)} 
+                    style={styles.button}>
+                    {userAttendanceStatus[event.id] ? 'Desconfirmar Asistencia' : 'Confirmar Asistencia'}
+                  </Button>
 
-                {/* Botón para subir foto */}
-                <Button 
-                  mode="contained" 
-                  onPress={() => uploadPhoto(event.id)} 
-                  style={styles.button}>
-                  Subir Foto
-                </Button>
-
-              </ScrollView>
-              </Card>
-            ))
-          ) : (
-            <Text>No hay eventos disponibles.</Text>
-          )}
-        </ScrollView>
+                  {/* Botón para redirigir a la vista de creación de publicaciones */}
+                  <Button 
+                    mode="contained" 
+                    onPress={() => router.push(`/bars/CreatePost`)} 
+                    style={styles.button}>
+                    Subir Publicación
+                  </Button>
+                </Card>
+              ))
+            ) : (
+              <Text>No hay eventos disponibles.</Text>
+            )}
+          </ScrollView>
         </Card.Content>
       </Card>
-
     </ScrollView>
   );
 }
-
-// me tiene que pasar
-// - nombre user
-// - eventos
-// - - asistentes al evento
-// - cervesas que sirva
-
-// seccion donde me pueda inscribir a los eventos (boton en events)
-
 
 const styles = StyleSheet.create({
   container: {
@@ -309,18 +194,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginVertical: 5,
   },
-  eventTitle: {
-    fontWeight: 'bold',
-  },
-  eventContent: {
-    fontSize: 14,
-    color: '#333',
-  },
   button: {
-    paddingVertical: 0.3, 
-    paddingHorizontal: 0.2, 
-    width: 200, 
-    alignSelf: 'flex-start', 
-    marginVertical: 3,
+    marginVertical: 10,
   },
 });

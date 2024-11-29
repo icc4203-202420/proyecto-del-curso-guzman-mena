@@ -51,7 +51,7 @@ const Home = () => {
         image: base64,
       };
     
-      const apiUrl = "http://192.168.0.123:3001/api/v1/events/1/upload_photo";
+      const apiUrl = "http://127.0.0.1:3001/api/v1/events/1/upload_photo";
 
       // Enviar la imagen al backend como JSON
       const res = await axios.post(apiUrl, payload, {

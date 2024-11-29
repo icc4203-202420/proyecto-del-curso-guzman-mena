@@ -10,7 +10,7 @@ const Gallery = () => {
   // Obtener las imágenes desde el backend
   const fetchImages = async () => {
     try { 
-      const response = await axios.get("http://192.168.0.123:3001/api/v1/events/1/photo_index");
+      const response = await axios.get("http://127.0.0.1:3001/api/v1/events/1/photo_index");
       setImages(response.data.images);
     } catch (error) {
       console.error("Error al cargar las imágenes:", error);
@@ -33,7 +33,7 @@ const Gallery = () => {
           keyExtractor={(item, index) => index.toString()}
           renderItem={({ item }) => (
             <View style={styles.imageContainer}>
-              <Image source={{ uri: `http://192.168.0.123:3001${item}` }} style={styles.image} />
+              <Image source={{ uri: `http://127.0.0.1:3001${item}` }} style={styles.image} />
             </View>
           )}
         />
