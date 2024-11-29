@@ -1,3 +1,13 @@
+# Instucciones de uso
+1. En la raiz del proyecto hybrid-frontend genere un arcivo llamado .env que contega lo siguiete:
+```sh
+REACT_APP_API_WL=ws://IP:3001
+REACT_APP_API_URL=http://IP:3001
+```
+2. Todos los usarios creados en el seed, siguien la siguiente forma
+   - correo: usuarioN@gmail.com
+   - contraseña: 123456
+
 # Proyecto de Aplicaciones Móviles - Enunciado General del Proyecto
 
 El proyecto del curso en este semestre consistirá en desarrollar una aplicación móvil para personas aficionadas a las cervezas, que frecuentan bares y eventos que se realizan en ellos. Los usuarios pueden evaluar cervezas y hacer amistades entre ellos. También pueden publicar fotos de los eventos a los que asisten en los bares, y etiquetarse.
