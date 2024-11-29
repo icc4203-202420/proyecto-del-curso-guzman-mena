@@ -132,22 +132,27 @@ class API::V1::EventsController < ApplicationController
   end
 
   def upload_photo
-    user = User.find_by(id: params[:user_id])
+    user = User.find_by(id: params[:id])
+    # encontrar todas las cosas nesesarias
     unless user
       render json: { error: "User not found" }, status: :not_found
       return
     end
-  
+    
     if params[:image].present?
       decoded_image = Base64.decode64(params[:image])
       file_name = "event_photo_#{Time.now.to_i}.jpg"
-      @event.photo.attach(
-        io: StringIO.new(decoded_image),
-        filename: file_name,
-        content_type: 'image/jpeg'
-      )
-  
-      render json: { message: 'Photo uploaded successfully', photo_url: url_for(@event.photo) }, status: :ok
+      # Define la ruta donde se guardará la imagen
+      file_path = Rails.root.join('public', 'images', file_name)
+      # Guarda la imagen en la carpeta public/images
+      File.open(file_path, 'wb') do |file|
+        file.write(decoded_image)
+      end
+      
+      # Devuelve la URL pública de la imagen
+      photo_url = "/images/#{file_name}"
+
+      render json: { message: 'Photo uploaded successfully', photo_url: photo_url  }, status: :ok
     else
       render json: { error: 'Image data is missing' }, status: :unprocessable_entity
     end
