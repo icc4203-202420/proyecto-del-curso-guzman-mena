@@ -1,9 +1,9 @@
 import React from 'react';
 import { View, Text, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
-import { useRouter } from 'expo-router';
+import {useRouter } from 'expo-router'
 
 const FeedContent = ({ activities }) => {
-  const router = useRouter();
+  const router = useRouter()
 
   const renderItem = ({ item }) => {
     console.log('Activity Item:', item); // Debug para verificar el contenido de `item`

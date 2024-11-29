@@ -20,6 +20,20 @@ class API::V1::EventsController < ApplicationController
     end
   end
 
+  # para obtener todos los eventos
+  def index_all
+    events = Event.includes(:bar).map do |event|
+      event_data = event.as_json
+      event_data.merge!(
+        bar_id: event.bar.id,
+        bar_name: event.bar.name
+      )
+      event_data
+    end
+
+    render json: { events: events }, status: :ok
+  end
+
   # GET /events/:id
   def show
     event_data = @event.as_json

@@ -11,10 +11,8 @@ import { saveItem, getItem, deleteItem } from "../util/Storage";
 // El componente funcional MainIndex
 export default function MainIndex() {
   const router = useRouter()
-
   const handleLogout = async () => {
     try {
-      
       await deleteItem('userId');
       console.log('user_id borrado exitosamente');
     } catch (error) {
@@ -28,6 +26,9 @@ export default function MainIndex() {
       <Button mode="contained" onPress={() => router.push('/loginScreen')}>
         Login
       </Button>
+      <Button mode="contained" onPress={() => router.push('/SignUpScreen')}>
+        SignUp
+      </Button>
       <Button mode="contained" onPress={() => router.push('/profile')}>
         Perfil
       </Button>
@@ -36,6 +37,12 @@ export default function MainIndex() {
       </Button>
       <Button mode="contained" onPress={() => router.push('/bars')}>
         Bares
+      </Button>
+      <Button mode="contained" onPress={() => router.push('/events')}>
+        Eventos
+      </Button>
+      <Button mode="contained" onPress={() => router.push('/feed')}>
+        Feed
       </Button>
       <Button mode="contained" onPress={handleLogout}>
         Logout

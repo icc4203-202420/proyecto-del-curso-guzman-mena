@@ -23,6 +23,8 @@ Rails.application.routes.draw do
         resources :events, only: [:index, :create]
       end
 
+      get 'events', to: 'events#index_all' # esta es para poder ver todos los eventos
+
       # Rutas para eventos individuales
       resources :events, only: [:show, :update, :destroy] do
         resources :attendances, only: [:create, :index] # Rutas para asistencias

@@ -1,7 +1,6 @@
 import { View, StyleSheet, ScrollView, TextInput } from 'react-native';
 import { Text, Avatar, Card, Button, Title } from 'react-native-paper';
 import React, { useState, useEffect } from 'react';
-import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 
 import { saveItem, getItem, deleteItem } from "../../util/Storage";

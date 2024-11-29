@@ -6,7 +6,7 @@ import { useRouter } from 'expo-router';
 import { REACT_APP_API_URL } from '@env';
 
 
-export default function BarsIndex({ navigation }) {
+export default function BarsIndex() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const [bars, setBars] = useState([]);
