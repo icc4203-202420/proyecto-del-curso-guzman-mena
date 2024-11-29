@@ -130,9 +130,14 @@ class API::V1::EventsController < ApplicationController
 
     render json: { posts: posts }, status: :ok
   end
-
+  # POST events/:id/upload_photo
   def upload_photo
-    user = User.find_by(id: params[:id])
+    user = User.find_by(id: params[:user_id])
+    targets = User.find_by(id: params[:target])
+    
+    puts(targets.first_name)
+    puts(user.first_name)
+    puts(@event.name)
     # encontrar todas las cosas nesesarias
     unless user
       render json: { error: "User not found" }, status: :not_found
@@ -148,7 +153,7 @@ class API::V1::EventsController < ApplicationController
       File.open(file_path, 'wb') do |file|
         file.write(decoded_image)
       end
-      
+
       # Devuelve la URL pública de la imagen
       photo_url = "/images/#{file_name}"
 

@@ -49,6 +49,9 @@ const Home = () => {
       // Crear el payload para enviar al backend
       const payload = {
         image: base64,
+        description: "esta es una descripcion",
+        user_id: 1,
+        target:[1,2,3],
       };
     
       const apiUrl = "http://127.0.0.1:3001/api/v1/events/1/upload_photo";
