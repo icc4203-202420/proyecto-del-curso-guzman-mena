@@ -59,17 +59,6 @@ export default function ProfileIndex() {
     fetchUserData();
   }, []);
   
-  useEffect(() => {
-    const checkUserIdChange = async () => {
-      const storedUserId = await getItem('userId');
-      if (storedUserId && storedUserId !== user.id) {
-        fetchUserData();
-      }
-    };
-    const interval = setInterval(checkUserIdChange, 1000);
-    return () => clearInterval(interval); 
-  }, [user.id]); 
-
 
 
   const searchUserByHandle = async (handle) => {
@@ -121,6 +110,7 @@ export default function ProfileIndex() {
     }
   };
 
+
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>
@@ -128,6 +118,16 @@ export default function ProfileIndex() {
         <Text style={styles.name}>{user.name}</Text>
         <Text style={styles.email}>{user.email}</Text>
       </View>
+
+
+            {/* Botón para recargar los datos del usuario */}
+        <Button 
+        mode="contained" 
+        onPress={fetchUserData} 
+        style={styles.reloadButton}
+      >
+        Recargar Datos
+      </Button>
 
       {/* Lista de Amigos */}
       <Card style={styles.card}>
