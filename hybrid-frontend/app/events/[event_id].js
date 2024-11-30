@@ -216,4 +216,13 @@ const styles = StyleSheet.create({
     marginVertical: 10,
     width: '90%',
   },
+  input: {
+    width: '90%',
+    height: 40,
+    borderColor: 'gray',
+    borderWidth: 1,
+    borderRadius: 5,
+    paddingHorizontal: 10,
+    marginBottom: 10,
+  },
 });
