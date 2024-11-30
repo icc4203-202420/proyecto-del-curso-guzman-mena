@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, ActivityIndicator, Image, ScrollView, TextInput } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, Image, ScrollView, TextInput, FlatList } from 'react-native';
 import { Card, Title, Paragraph, Button } from 'react-native-paper';
 import { useLocalSearchParams } from 'expo-router';
 import { saveItem, getItem, deleteItem } from "../../util/Storage";
@@ -24,7 +24,12 @@ export default function EventShow() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [imageUri, setImageUri] = useState(null);
-  const [description, setDescription] = useState(''); // este es nuevo
+  const [description, setDescription] = useState('');
+
+  const [attendances, setAttendances] = useState({});
+  const [userAttendanceStatus, setUserAttendanceStatus] = useState({});
+
+
   const apiUrl = REACT_APP_API_URL;
 
   useEffect(() => {
@@ -35,9 +40,6 @@ export default function EventShow() {
 
     fetchUserId();
   }, []);
-
-
-
 
   useEffect(() => {
     const fetchEvent = async () => {
@@ -52,6 +54,53 @@ export default function EventShow() {
     };
     fetchEvent();
   }, [event_id]);
+
+
+  const fetchAttendances = async () => {
+    try {
+      const response = await axios.get(`${apiUrl}/api/v1/events/${event_id}/attendances`);
+      setAttendances(response.data.attendees || []);  // Guardar los asistentes del evento
+      if (userId) {
+        const userAttendance = response.data.attendees.some(
+          (attendance) => attendance.user_id.toString() === userId.toString()
+        );
+        setUserAttendanceStatus(userAttendance);  // Estado de asistencia del usuario
+      }
+    } catch (error) {
+      console.error('Error al cargar asistentes del evento:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchAttendances();  // Llamar solo para el evento actual
+  }, [event_id]);  // Dependencia en `event_id` para actualizar cuando cambie
+
+
+  const handleAttendance = async () => {
+    if (!userId) {
+      Alert.alert('Error', 'Debes iniciar sesión para confirmar asistencia.');
+      return;
+    }
+  
+    const isAttending = userAttendanceStatus;
+  
+    try {
+      if (isAttending) {
+        // Eliminar asistencia
+        await axios.delete(`${apiUrl}/api/v1/events/${event_id}/attendances/${userId}`);
+      } else {
+        // Confirmar asistencia
+        await axios.post(`${apiUrl}/api/v1/events/${event_id}/attendances`, { user_id: userId });
+      }
+  
+      // Actualizar estado
+      setUserAttendanceStatus(!isAttending);
+      fetchAttendances();  // Volver a cargar los asistentes
+    } catch (error) {
+      console.error('Error al cambiar el estado de asistencia:', error);
+    }
+  };
+  
 
   // Seleccionar imagen
   const handleSelectPhoto = async () => {
@@ -133,6 +182,12 @@ export default function EventShow() {
       </Card>
 
       <View style={styles.imageSection}>
+      <Title style={styles.subtitle}>Imagenes del evento</Title>
+
+      </View>
+
+
+      <View style={styles.imageSection}>
         <Title style={styles.subtitle}>Seleccionar y Subir Imagen</Title>
         {imageUri ? (
           <Image source={{ uri: imageUri }} style={styles.selectedImage} />
@@ -152,6 +207,19 @@ export default function EventShow() {
           Subir Foto y Descripción
         </Button>
       </View>
+      
+      <View style={styles.imageSection}>
+      <Text>¿¿Te esperamos??</Text>
+      {/* Botón para confirmar/desconfirmar asistencia */}
+      <Button
+        mode="contained"
+        onPress={handleAttendance}
+        style={styles.button}
+      >
+        {userAttendanceStatus ? 'Desconfirmar Asistencia' : 'Confirmar Asistencia'}
+      </Button>
+    </View>
+
     </ScrollView>
   );
 }

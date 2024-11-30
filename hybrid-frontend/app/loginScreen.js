@@ -99,7 +99,7 @@ export default function LoginScreen() {
         secureTextEntry
       />
 
-      <Button title={loading ? 'Logging in...' : 'Login'} onPress={handleLogin} disabled={loading} />
+      <Button title={loading ? 'Loging in...' : 'Login'} onPress={handleLogin} disabled={loading} />
       {loading && <ActivityIndicator style={{ marginTop: 20 }} />}
     </View>
   );

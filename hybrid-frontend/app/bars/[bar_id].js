@@ -45,6 +45,7 @@ export default function BarsShow() {
     };
     fetchBarDetails();
   }, [bar_id]);
+  
 
   const fetchAttendances = async (eventId) => {
     try {
