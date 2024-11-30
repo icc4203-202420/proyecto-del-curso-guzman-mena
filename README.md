@@ -7,6 +7,11 @@ REACT_APP_API_URL=http://IP:3001
 2. Todos los usarios creados en el seed, siguien la siguiente forma
    - correo: usuarioN@gmail.com
    - contraseña: 123456
+3. Algunas veces le cuesta partir y conectarse al Backend
+```sh
+   rm -rf node_modules yarn.lock
+   yarn install
+```
 
 # Proyecto de Aplicaciones Móviles - Enunciado General del Proyecto
 

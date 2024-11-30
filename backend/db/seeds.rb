@@ -19,6 +19,8 @@ User.destroy_all
 Address.destroy_all
 Country.destroy_all
 ReviewCounter.destroy_all
+Target.destroy_all
+Photo.destroy_all
 
 # Rehabilitar las restricciones de claves foráneas
 ActiveRecord::Base.connection.execute("PRAGMA foreign_keys = ON")

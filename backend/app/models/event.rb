@@ -3,6 +3,8 @@ class Event < ApplicationRecord
   has_many :attendances
   has_many :users, through: :attendances
   has_many_attached :images
+  has_many :photos
+
 
   has_one_attached :flyer
 

@@ -51,7 +51,10 @@ export default function EventShow() {
           {new Date(event.start_date).toLocaleDateString()} - {new Date(event.end_date).toLocaleDateString()}
         </Text>
         <Text style={styles.description}>{event.description}</Text>
-        <Text style={styles.bar}>Bar: {event.bar_id}</Text>
+        <Text style={styles.bar}>Aca va a ir un box con las imagnes del evento</Text>
+        <Text style={styles.bar}>Aca se va a mostrar la imagen que se va a enviar</Text>
+        <Text style={styles.bar}>Aca se va a agregar el comentario</Text>
+        
       </View>
     </ScrollView>
   );

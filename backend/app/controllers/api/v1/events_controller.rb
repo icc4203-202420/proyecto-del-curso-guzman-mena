@@ -130,38 +130,82 @@ class API::V1::EventsController < ApplicationController
 
     render json: { posts: posts }, status: :ok
   end
+
   # POST events/:id/upload_photo
   def upload_photo
     user = User.find_by(id: params[:user_id])
-    targets = User.find_by(id: params[:target])
+    targets = params[:targets] # Lista de IDs de usuarios etiquetados
+    description = params[:description] # Descripción de la foto
     
-    puts(targets.first_name)
-    puts(user.first_name)
-    puts(@event.name)
-    # encontrar todas las cosas nesesarias
+    # Configurar la zona horaria a Chile
+    Time.zone = 'America/Santiago'
+    
     unless user
       render json: { error: "User not found" }, status: :not_found
       return
     end
-    
+  
+    unless @event
+      render json: { error: "Event not found" }, status: :not_found
+      return
+    end
+  
     if params[:image].present?
       decoded_image = Base64.decode64(params[:image])
-      file_name = "event_photo_#{Time.now.to_i}.jpg"
-      # Define la ruta donde se guardará la imagen
-      file_path = Rails.root.join('public', 'images', file_name)
-      # Guarda la imagen en la carpeta public/images
+      
+      # Nombre de archivo con timestamp en la zona horaria chilena
+      file_name = "#{user.id}_#{Time.zone.now.to_i}.jpg"
+  
+      # Carpeta donde se guardará la imagen (basada en el nombre del evento)
+      event_folder = Rails.root.join('public', 'images', @event.name)
+  
+      # Crear la carpeta del evento si no existe
+      Dir.mkdir(event_folder) unless Dir.exist?(event_folder)
+  
+      # Ruta completa del archivo dentro de la carpeta del evento
+      file_path = event_folder.join(file_name)
+  
+      # Guardar la imagen en la carpeta específica
       File.open(file_path, 'wb') do |file|
         file.write(decoded_image)
       end
-
-      # Devuelve la URL pública de la imagen
-      photo_url = "/images/#{file_name}"
-
-      render json: { message: 'Photo uploaded successfully', photo_url: photo_url  }, status: :ok
+  
+      # Guardar los detalles de la imagen en el modelo Photo
+      photo = Photo.create!(
+        user_id: user.id,
+        event_id: @event.id,
+        description: description,
+        path: "/images/#{@event.name}/#{file_name}"
+      )
+  
+      # Guardar los usuarios etiquetados en el modelo Target
+      if targets.present?
+        targets.each do |target_id|
+          Target.create!(
+            user_id: target_id,
+            photo_id: photo.id
+          )
+        end
+      end
+  
+      # Devolver la URL pública de la imagen
+      photo_url = photo.path
+  
+      render json: { message: 'Photo uploaded successfully', photo_url: photo_url, photo_id: photo.id }, status: :ok
     else
       render json: { error: 'Image data is missing' }, status: :unprocessable_entity
     end
+
+    # Logica para el feed
+    #
+    #
+    #
+    #
+    #
+    
   end
+  
+  
   
 
   private
