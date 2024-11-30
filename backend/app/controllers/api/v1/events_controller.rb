@@ -197,11 +197,18 @@ class API::V1::EventsController < ApplicationController
     end
 
     # Logica para el feed
-    #
-    #
-    #
-    #
-    #
+    ActionCable.server.broadcast('friend_activity_channel', {
+  activity: {
+    id: photo.id,
+    type: 'photo',
+    user_name: user.first_name,
+    description: photo.description,
+    photo_url: photo.path,
+    event_name: @event.name,
+    event_id: @event.id,
+    created_at: photo.created_at.iso8601
+  }
+})
     
   end
   
