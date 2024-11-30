@@ -4,7 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import consumer from './consumer';
 import FeedContent from './FeedContent';
-import { REACT_APP_API_WL } from '@env';
+import { REACT_APP_API_URL } from '@env';
 
 const ActivitySubscriber = () => {
   const [activities, setActivities] = useState([]);
@@ -18,11 +18,11 @@ const ActivitySubscriber = () => {
         console.error('User ID not found in AsyncStorage');
         return;
       }
-
-      const response = await axios.get(`${REACT_APP_API_WL}/api/v1/reviews/recent_reviews`, {
+  
+      const response = await axios.get(`${REACT_APP_API_URL}/api/v1/reviews/recent_reviews`, {
         params: { user_id: userId },
       });
-
+  
       if (response.status === 200) {
         setActivities(response.data.activities || []);
         setFilteredActivities(response.data.activities || []);
@@ -60,6 +60,7 @@ const ActivitySubscriber = () => {
         },
       }
     );
+    
 
     return () => subscription.unsubscribe();
   }, []);

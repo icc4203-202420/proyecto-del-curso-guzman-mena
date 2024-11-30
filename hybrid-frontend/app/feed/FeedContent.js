@@ -1,77 +1,99 @@
 import React from 'react';
-import { View, Text, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
-import {useRouter } from 'expo-router'
+import { View, Text, FlatList, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import { useRouter } from 'expo-router';
 
 const FeedContent = ({ activities }) => {
-  const router = useRouter()
+  const router = useRouter();
 
   const renderItem = ({ item }) => {
     console.log('Activity Item:', item); // Debug para verificar el contenido de `item`
 
-    return (
-      <View style={styles.activityCard}>
-        {/* Recuadro completo como botón para la cerveza */}
-        <TouchableOpacity
-          style={styles.cardButton}
-          onPress={() => {
-            if (item.type === 'review' && item.beer_id) {
-              router.push(`/beers/${item.beer_id}`);
-            } else {
-              console.error('Beer ID is missing or invalid:', item.beer_id);
-            }
-          }}
-        >
-          {/* Información principal */}
-          <Text style={styles.activityText}>
-            {item.user_name
-              ? `${item.user_name} calificó`
-              : 'Un amigo calificó'}{' '}
-            {item.beer_name || 'una cerveza'}{' '}
-            {item.rating ? `con ${item.rating} estrellas.` : ''}
-          </Text>
-
-          {/* Descripción adicional */}
-          {item.text && <Text style={styles.activityDetails}>{item.text}</Text>}
-
-          {/* Detalles adicionales */}
-          <View style={styles.detailsContainer}>
-            {/* Nombre del bar como texto con interacción */}
-            {item.bar_name && (
-              <Text
-                style={styles.barText}
-                onPress={() => {
-                  if (item.bar_id) {
-                    router.push(`/bars/${item.bar_id}`);
-                  } else {
-                    console.error('Bar ID is missing or invalid:', item.bar_id);
-                  }
-                }}
-              >
-                {item.bar_name}
-              </Text>
-            )}
-
-            {/* País y dirección */}
-            <Text style={styles.detail}>
-              <Text style={styles.label}>País:</Text>{' '}
-              {item.bar_country || 'No especificado'}
+    if (item.type === 'review') {
+      // Renderizar reseñas
+      return (
+        <View style={styles.activityCard}>
+          <TouchableOpacity
+            style={styles.cardButton}
+            onPress={() => {
+              if (item.beer_id) {
+                router.push(`/beers/${item.beer_id}`);
+              } else {
+                console.error('Beer ID is missing or invalid:', item.beer_id);
+              }
+            }}
+          >
+            <Text style={styles.activityText}>
+              {item.user_name
+                ? `${item.user_name} calificó`
+                : 'Un amigo calificó'}{' '}
+              {item.beer_name || 'una cerveza'}{' '}
+              {item.rating ? `con ${item.rating} estrellas.` : ''}
             </Text>
-            <Text style={styles.detail}>
-              <Text style={styles.label}>Dirección:</Text>{' '}
-              {item.bar_address || 'No especificada'}
-            </Text>
-
-            {/* Promedio de evaluación */}
-            {item.avg_rating && (
+            {item.text && <Text style={styles.activityDetails}>{item.text}</Text>}
+            <View style={styles.detailsContainer}>
+              {item.bar_name && (
+                <Text
+                  style={styles.barText}
+                  onPress={() => {
+                    if (item.bar_id) {
+                      router.push(`/bars/${item.bar_id}`);
+                    } else {
+                      console.error('Bar ID is missing or invalid:', item.bar_id);
+                    }
+                  }}
+                >
+                  {item.bar_name}
+                </Text>
+              )}
               <Text style={styles.detail}>
-                <Text style={styles.label}>Evaluación promedio:</Text>{' '}
-                {item.avg_rating.toFixed(2)}
+                <Text style={styles.label}>País:</Text>{' '}
+                {item.bar_country || 'No especificado'}
               </Text>
+              <Text style={styles.detail}>
+                <Text style={styles.label}>Dirección:</Text>{' '}
+                {item.bar_address || 'No especificada'}
+              </Text>
+            </View>
+          </TouchableOpacity>
+        </View>
+      );
+    } else if (item.type === 'photo') {
+      // Renderizar publicaciones de fotos
+      return (
+        <View style={styles.activityCard}>
+          <TouchableOpacity
+            style={styles.cardButton}
+            onPress={() => {
+              if (item.event_id) {
+                router.push(`/events/${item.event_id}`);
+              } else {
+                console.error('Event ID is missing or invalid:', item.event_id);
+              }
+            }}
+          >
+            <Text style={styles.activityText}>
+              {item.user_name
+                ? `${item.user_name} publicó una foto en`
+                : 'Un amigo publicó una foto en'}{' '}
+              {item.event_name || 'un evento'}.
+            </Text>
+            {item.description && (
+              <Text style={styles.activityDetails}>{item.description}</Text>
             )}
-          </View>
-        </TouchableOpacity>
-      </View>
-    );
+            {item.photo_url && (
+              <Image source={{ uri: item.photo_url }} style={styles.photo} />
+            )}
+            <View style={styles.detailsContainer}>
+              <Text style={styles.detail}>
+                <Text style={styles.label}>Publicado el:</Text>{' '}
+                {new Date(item.created_at).toLocaleDateString()}
+              </Text>
+            </View>
+          </TouchableOpacity>
+        </View>
+      );
+    }
+    return null; // En caso de tipo desconocido
   };
 
   return (
@@ -80,7 +102,9 @@ const FeedContent = ({ activities }) => {
       keyExtractor={(item) => item.id.toString()}
       renderItem={renderItem}
       contentContainerStyle={styles.listContainer}
-      ListEmptyComponent={<Text style={styles.emptyText}>No hay actividades disponibles.</Text>}
+      ListEmptyComponent={
+        <Text style={styles.emptyText}>No hay actividades disponibles.</Text>
+      }
     />
   );
 };
@@ -99,6 +123,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 5,
     elevation: 3,
+    alignItems: 'flex-start', // Asegura que todo dentro del card esté alineado a la izquierda
   },
   cardButton: {
     flex: 1,
@@ -124,10 +149,18 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   barText: {
-    color: '#1e88e5', // Azul intenso
+    color: '#1e88e5',
     fontWeight: 'bold',
     textDecorationLine: 'underline',
     marginBottom: 5,
+  },
+  photo: {
+    width: '80%', // Ajusta el ancho según lo necesario
+    height: 200, // Altura fija
+    resizeMode: 'contain', // Asegura que la imagen se ajuste al contenedor manteniendo la proporción
+    borderRadius: 10,
+    alignSelf: 'flex-start', // Alinea la imagen a la izquierda dentro de su contenedor
+    marginVertical: 10,
   },
   emptyText: {
     textAlign: 'center',
@@ -136,5 +169,6 @@ const styles = StyleSheet.create({
     color: '#aaa',
   },
 });
+
 
 export default FeedContent;

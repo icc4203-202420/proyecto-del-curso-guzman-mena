@@ -60,29 +60,67 @@ class API::V1::ReviewsController < ApplicationController
 
   # Nuevo método para obtener las reseñas más recientes
   def recent_reviews
-    @reviews = Review.includes(:user, :beer).order(created_at: :desc).limit(10)
+    user_id = params[:user_id]
+    user = User.find_by(id: user_id)
   
-    activities = @reviews.map do |review|
+    unless user
+      render json: { error: "User not found" }, status: :not_found
+      return
+    end
+  
+    # Obtener los IDs de los amigos del usuario
+    friend_ids = user.friends.pluck(:id)
+  
+    # Filtrar las reseñas y fotos por los amigos
+    reviews = Review.includes(:user, :beer)
+                    .where(user_id: friend_ids)
+                    .order(created_at: :desc)
+                    .limit(10)
+  
+    photos = Photo.includes(:user, :event)
+                  .where(user_id: friend_ids)
+                  .order(created_at: :desc)
+                  .limit(10)
+  
+    review_activities = reviews.map do |review|
       bar = review.beer.bars.first # Obtén el primer bar asociado a la cerveza, si existe
       {
         id: review.id,
         type: 'review',
         user_name: review.user.first_name,
         beer_name: review.beer.name,
-        beer_id: review.beer.id, # Asegúrate de incluir el ID de la cerveza
+        beer_id: review.beer.id,
         rating: review.rating,
         text: review.text,
         created_at: review.created_at.iso8601,
         bar_name: bar&.name,
-        bar_id: bar&.id, # Asegúrate de incluir el ID del bar
+        bar_id: bar&.id,
         bar_country: bar&.address&.country&.name,
         bar_address: bar&.address&.line1,
         avg_rating: review.beer.avg_rating
       }
     end
   
+    photo_activities = photos.map do |photo|
+      {
+        id: photo.id,
+        type: 'photo',
+        user_name: photo.user.first_name,
+        description: photo.description,
+        photo_url: "#{request.base_url}#{photo.path}", # URL completa
+        event_name: photo.event.name,
+        event_id: photo.event.id,
+        created_at: photo.created_at.iso8601
+      }
+    end
+  
+    # Combinar las actividades de reseñas y fotos, ordenadas por fecha
+    activities = (review_activities + photo_activities).sort_by { |activity| activity[:created_at] }.reverse
+  
     render json: { activities: activities }, status: :ok
   end
+  
+  
   
   
 
