@@ -123,6 +123,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 5,
     elevation: 3,
+    alignItems: 'flex-start', // Asegura que todo dentro del card esté alineado a la izquierda
   },
   cardButton: {
     flex: 1,
@@ -154,10 +155,12 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   photo: {
-    width: '100%',
-    height: 200,
-    marginTop: 10,
+    width: '80%', // Ajusta el ancho según lo necesario
+    height: 200, // Altura fija
+    resizeMode: 'contain', // Asegura que la imagen se ajuste al contenedor manteniendo la proporción
     borderRadius: 10,
+    alignSelf: 'flex-start', // Alinea la imagen a la izquierda dentro de su contenedor
+    marginVertical: 10,
   },
   emptyText: {
     textAlign: 'center',
@@ -166,5 +169,6 @@ const styles = StyleSheet.create({
     color: '#aaa',
   },
 });
+
 
 export default FeedContent;
