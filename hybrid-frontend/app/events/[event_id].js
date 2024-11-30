@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, ActivityIndicator, Image, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, Image, ScrollView, TextInput } from 'react-native';
 import { Card, Title, Paragraph, Button } from 'react-native-paper';
 import { useLocalSearchParams } from 'expo-router';
 import { saveItem, getItem, deleteItem } from "../../util/Storage";
@@ -24,6 +24,7 @@ export default function EventShow() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [imageUri, setImageUri] = useState(null);
+  const [description, setDescription] = useState(''); // este es nuevo
   const apiUrl = REACT_APP_API_URL;
 
   useEffect(() => {
@@ -65,12 +66,24 @@ export default function EventShow() {
     }
   };
 
-  // Subir imagen al backend
+  // Manejar cambio en la descripción
+  const handleDescriptionChange = (text) => {
+    setDescription(text);
+  };
+
+
+  // Subir imagen y descripción al backend
   const handleUploadPhoto = async () => {
     if (!imageUri) {
       alert("Selecciona una imagen primero.");
       return;
     }
+
+    if (!description.trim()) {
+      alert("Escribe una descripción para la imagen.");
+      return;
+    }
+
     setLoading(true);
     try {
       const response = await fetch(imageUri);
@@ -79,12 +92,12 @@ export default function EventShow() {
 
       await axios.post(`${apiUrl}/api/v1/events/${event_id}/upload_photo`, {
         image: base64,
-        description: "Descripción de ejemplo",
+        description: description, // Enviando la descripción
         user_id: userId,
-        target: [1,2,3]
+        target: [1, 2, 3]
       });
 
-      alert("Imagen subida con éxito");
+      alert("Imagen y descripción subidas con éxito");
     } catch (error) {
       console.error("Error al subir la imagen:", error);
     }
@@ -126,11 +139,17 @@ export default function EventShow() {
         ) : (
           <Text style={styles.placeholder}>No se ha seleccionado ninguna imagen</Text>
         )}
+        <TextInput
+          style={styles.input}
+          placeholder="Escribe una descripción"
+          value={description}
+          onChangeText={handleDescriptionChange}
+        />
         <Button mode="contained" onPress={handleSelectPhoto} style={styles.button}>
           Seleccionar Foto
         </Button>
         <Button mode="contained" onPress={handleUploadPhoto} style={styles.button}>
-          Subir Foto
+          Subir Foto y Descripción
         </Button>
       </View>
     </ScrollView>
