@@ -106,7 +106,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
     flexDirection: "row",
     flexWrap: "wrap",
-    justifyContent: "center", // Ahora esta propiedad está dentro de contentContainerStyle
+    justifyContent: "center",
   },
   targetCard: {
     backgroundColor: "#e0e0e0",
