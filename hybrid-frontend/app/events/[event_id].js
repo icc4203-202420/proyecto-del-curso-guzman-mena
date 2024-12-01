@@ -25,11 +25,11 @@ export default function EventShow() {
   const [error, setError] = useState(null);
   const [imageUri, setImageUri] = useState(null);
   const [description, setDescription] = useState('');
-
   const [attendances, setAttendances] = useState({});
   const [userAttendanceStatus, setUserAttendanceStatus] = useState({});
-
-
+  const [searchHandle, setSearchHandle] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [targetList, setTargetList] = useState([]);
   const apiUrl = REACT_APP_API_URL;
 
   useEffect(() => {
@@ -139,11 +139,14 @@ export default function EventShow() {
       const blob = await response.blob();
       const base64 = await blobToBase64(blob);
 
+      const targetIds = targetList.map(target => target.id);
+
+
       await axios.post(`${apiUrl}/api/v1/events/${event_id}/upload_photo`, {
         image: base64,
         description: description, // Enviando la descripción
         user_id: userId,
-        target: [1, 2, 3]
+        target: targetIds
       });
 
       alert("Imagen y descripción subidas con éxito");
@@ -152,6 +155,51 @@ export default function EventShow() {
     }
     setLoading(false);
   };
+
+
+  const searchUserByHandle = async (handle) => {
+    try {
+      const response = await axios.get(`${apiUrl}/api/v1/users/search?handle=${handle}`);
+      if (response.status === 200) {
+        setSearchResults(response.data.users);
+        setError('');
+      } else {
+        setSearchResults([]);
+        setError('No se encontraron usuarios.');
+      }
+    } catch (error) {
+      console.error('Error en la búsqueda de usuario:', error);
+      setError('Error al buscar usuario.');
+    }
+  };
+
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      if (searchHandle.length > 0) {
+        searchUserByHandle(searchHandle);
+      } else {
+        setSearchResults([]);
+      }
+    }, 300);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchHandle]);
+
+  const addTargget = (targetId, targetName) => {
+    if (!targetList.some((target) => target.id === targetId)) {
+      setTargetList([...targetList, { id: targetId, name: targetName }]);
+      console.log(`Target ID ${targetId} agregado exitosamente.`);
+    } else {
+      console.log(`Target ID ${targetId} ya está en la lista.`);
+    }
+  };
+  
+
+  const removeTarget = (targetId) => {
+    setTargetList(targetList.filter((target) => target.id !== targetId));
+    console.log(`Target ID ${targetId} eliminado.`);
+  };
+
 
   if (loading) {
     return (
@@ -200,6 +248,53 @@ export default function EventShow() {
           value={description}
           onChangeText={handleDescriptionChange}
         />
+
+        <View style={styles.tagSection}>
+          <Title style={styles.subtitle}>Etiquetas de Amigos</Title>
+          {targetList.length > 0 ? (
+            targetList.map((target) => (
+              <View key={target.id} style={styles.tag}>
+                <Text style={styles.tagText}>{target.name}</Text>
+                <Text
+                  style={styles.closeIcon}
+                  onPress={() => removeTarget(target.id)}
+                >
+                  ✕
+                </Text>
+              </View>
+            ))
+          ) : (
+            <Text>No se han etiquetado amigos.</Text>
+          )}
+        </View>
+
+
+        <Title>Etiquetar Amigos</Title>
+        <TextInput
+          style={styles.input}
+          placeholder="Ingrese handle"
+          value={searchHandle}
+          onChangeText={setSearchHandle}
+        />
+        <ScrollView>
+          {searchResults.length > 0 ? (
+            searchResults.map((result) => (
+              <View key={result.id} style={styles.friendCard}>
+                <Text>{result.first_name} {result.last_name}</Text>
+                  <Button mode="outlined" onPress={() => addTargget(result.id, `${result.first_name} ${result.last_name}`)} 
+                  style={styles.addButton}>
+                  Agregar amigo
+                </Button>
+              </View>
+              ))
+            ) : (
+              <Text>No se encontraron resultados.</Text>
+            )}
+          </ScrollView>
+          {error ? <Text style={styles.errorText}>{error}</Text> : null}
+
+
+
         <Button mode="contained" onPress={handleSelectPhoto} style={styles.button}>
           Seleccionar Foto
         </Button>
@@ -293,4 +388,57 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     marginBottom: 10,
   },
+  friendCard: {
+    padding: 10,
+    borderRadius: 5,
+    backgroundColor: '#f9f9f9',
+    marginBottom: 5,
+  },
+  tagSection: {
+    marginTop: 20,
+    padding: 10,
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  tag: {
+    backgroundColor: '#e0e0e0',
+    borderRadius: 20,
+    paddingHorizontal: 15,
+    paddingVertical: 5,
+    marginVertical: 5,
+  },
+  tagText: {
+    fontSize: 16,
+    color: '#333',
+  },
+
+
+  tagSection: {
+    marginTop: 20,
+  },
+  tag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 8,
+    backgroundColor: '#E0E0E0',
+    borderRadius: 16,
+    marginVertical: 5,
+    marginRight: 5,
+    display: 'flex',
+    justifyContent: 'space-between',
+    width: 'auto',
+  },
+  tagText: {
+    fontSize: 14,
+    color: '#000',
+  },
+  closeIcon: {
+    marginLeft: 10,
+    fontSize: 18,
+    color: '#FF0000', // Color rojo para la "X"
+    fontWeight: 'bold',
+    cursor: 'pointer',
+  },
+  
 });

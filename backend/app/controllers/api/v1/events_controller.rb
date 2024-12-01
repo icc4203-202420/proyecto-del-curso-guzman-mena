@@ -136,7 +136,7 @@ class API::V1::EventsController < ApplicationController
     user = User.find_by(id: params[:user_id])
     targets = params[:targets] # Lista de IDs de usuarios etiquetados
     description = params[:description] # Descripción de la foto
-    
+  
     # Configurar la zona horaria a Chile
     Time.zone = 'America/Santiago'
     
@@ -177,9 +177,10 @@ class API::V1::EventsController < ApplicationController
         description: description,
         path: "/images/#{@event.name}/#{file_name}"
       )
-  
+      puts(photo.id, "hola este es photo_iddddddddddddddddddddddddddddddddddddddddddddddddd")
       # Guardar los usuarios etiquetados en el modelo Target
       if targets.present?
+        puts("estoy aca")
         targets.each do |target_id|
           Target.create!(
             user_id: target_id,
@@ -198,18 +199,21 @@ class API::V1::EventsController < ApplicationController
 
     # Logica para el feed
     ActionCable.server.broadcast('friend_activity_channel', {
-  activity: {
-    id: photo.id,
-    type: 'photo',
-    user_name: user.first_name,
-    description: photo.description,
-    photo_url: photo.path,
-    event_name: @event.name,
-    event_id: @event.id,
-    created_at: photo.created_at.iso8601
-  }
-})
-    
+    activity: {
+      id: photo.id,
+      type: 'photo',
+      user_name: user.first_name,
+      description: photo.description,
+      photo_url: photo.path,
+      event_name: @event.name,
+      event_id: @event.id,
+      created_at: photo.created_at.iso8601
+    }
+    })
+  end
+
+  def photo_index
+    puts("holaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
   end
   
   
