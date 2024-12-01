@@ -10,4 +10,8 @@ class Photo < ApplicationRecord
   
   # Validaciones
   validates :description, presence: true
+
+  def full_path
+    "/images/#{event.name}/#{path}"
+  end
 end

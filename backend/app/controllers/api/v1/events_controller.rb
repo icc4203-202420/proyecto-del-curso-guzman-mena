@@ -6,7 +6,7 @@ class API::V1::EventsController < ApplicationController
 
   before_action :set_bar, only: [:index, :create]
   before_action :verify_jwt_token, only: [:create, :update, :destroy, :create_post]
-  before_action :set_event, only: [:show, :update, :destroy, :upload_photo, :create_post, :index_posts]
+  before_action :set_event, only: [:show, :update, :destroy, :upload_photo, :create_post, :index_posts, :photo_index]
 
   # GET /bars/:bar_id/events
   def index
@@ -135,8 +135,8 @@ class API::V1::EventsController < ApplicationController
   def upload_photo
     user = User.find_by(id: params[:user_id])
     targets = params[:targets] # Lista de IDs de usuarios etiquetados
-    description = params[:description] # Descripción de la foto
-  
+    description = params[:description] # Descripción de la fotozzzzzyyyy
+    
     # Configurar la zona horaria a Chile
     Time.zone = 'America/Santiago'
     
@@ -157,7 +157,7 @@ class API::V1::EventsController < ApplicationController
       file_name = "#{user.id}_#{Time.zone.now.to_i}.jpg"
   
       # Carpeta donde se guardará la imagen (basada en el nombre del evento)
-      event_folder = Rails.root.join('public', 'images', @event.name)
+      event_folder = Rails.root.join('public', 'images', @event.name.gsub(" ", "_"))
   
       # Crear la carpeta del evento si no existe
       Dir.mkdir(event_folder) unless Dir.exist?(event_folder)
@@ -175,12 +175,11 @@ class API::V1::EventsController < ApplicationController
         user_id: user.id,
         event_id: @event.id,
         description: description,
-        path: "/images/#{@event.name}/#{file_name}"
+        path: "/images/#{@event.name.gsub(" ", "_")}/#{file_name}"
       )
-      puts(photo.id, "hola este es photo_iddddddddddddddddddddddddddddddddddddddddddddddddd")
+  
       # Guardar los usuarios etiquetados en el modelo Target
       if targets.present?
-        puts("estoy aca")
         targets.each do |target_id|
           Target.create!(
             user_id: target_id,
@@ -199,22 +198,153 @@ class API::V1::EventsController < ApplicationController
 
     # Logica para el feed
     ActionCable.server.broadcast('friend_activity_channel', {
-    activity: {
-      id: photo.id,
-      type: 'photo',
-      user_name: user.first_name,
-      description: photo.description,
-      photo_url: photo.path,
-      event_name: @event.name,
-      event_id: @event.id,
-      created_at: photo.created_at.iso8601
-    }
-    })
+  activity: {
+    id: photo.id,
+    type: 'photo',
+    user_name: user.first_name,
+    description: photo.description,
+    photo_url: photo.path,
+    event_name: @event.name,
+    event_id: @event.id,
+    created_at: photo.created_at.iso8601
+  }
+})
   end
 
-  def photo_index
-    puts("holaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
+
+
+
+
+
+
+
+
+
+
+
+# GET /api/v1/events/:id/photo_index
+
+def photo_index
+  # Cargar las fotos y sus usuarios asociados en una sola consulta para evitar N+1
+  photos = @event.photos.includes(:user)
+
+  # Obtener los targets asociados con las fotos del evento
+  targets = Target.where(photo_id: photos.pluck(:id)).includes(:user)
+
+  # Organizar la información de las fotos y sus targets
+  photos_data = photos.map do |photo|
+    # Obtener los targets asociados con esta foto
+    target_users = targets.select { |target| target.photo_id == photo.id }.map do |target|
+      { user_id: target.user_id, user_name: target.user.first_name }
+    end
+   
+
+    # Crear la estructura de datos para la foto
+    {
+      path: "#{photo.path}",
+      description: photo.description,
+      user: { id: photo.user_id, name: photo.user.first_name },
+      targets: target_users
+    }
   end
+
+  # Enviar la respuesta en formato JSON
+  render json: { images: photos_data }
+end
+
+# def photo_index
+#   # Buscar las fotos del evento solicitado
+#   photos = @event.photos
+#   puts("holaaaaaaaaaaaaaaaaaa", photos)
+
+#   # Obtener la información de los targets para cada foto
+#   photos_data = photos.map do |photo|
+#     # Obtener los targets para la foto
+#     targets = Target.where(photo_id: photo.id)
+
+#     # Obtener la información de los usuarios asociados con los targets
+#     target_users = targets.map do |target|
+#       user = User.find(target.user_id)
+#       { user_id: user.id, user_name: user.first_name }
+#     end
+
+#     # Recopilar la información de cada foto y sus targets
+#     {
+#       path: "/images/#{photo.path}",
+#       description: photo.description,
+#       user: { id: photo.user_id, name: User.find(photo.user_id).name },
+#       targets: target_users
+#     }
+#   end
+
+#   # Enviar la información ordenada (opcional, si quieres ordenarlo por algún criterio, por ejemplo, fecha)
+#   photos_data.sort_by! { |photo| File.basename(photo[:path]) }
+
+#   # Enviar la respuesta en formato JSON
+#   render json: { images: photos_data }
+# end
+
+
+
+# def photo_index
+#   image_files = Dir.glob(Rails.root.join('public', 'images', '*.{jpg,png,jpeg}'))
+#   image_urls = image_files.map { |file| "/images/#{File.basename(file)}" }
+#   render json: { images: image_urls }
+# end
+
+
+# def photo_index
+#   photos = @event.photos.includes(:user, :targets)
+
+#   images = photos.map do |photo|
+#     {
+#       path: photo.path,
+#       description: photo.description,
+#       user: {
+#         id: photo.user.id,
+#         name: photo.user.first_name, # Asegúrate de que el modelo `User` tenga un atributo `name`
+#       },
+#       targets: photo.targets.map do |target|
+#         {
+#           id: target.id,
+#           user_id: target.user_id
+#         }
+#       end
+#     }
+#   end
+
+#   render json: { images: images }, status: :ok
+# end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   
   
   

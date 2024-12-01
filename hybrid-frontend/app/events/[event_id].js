@@ -146,7 +146,7 @@ export default function EventShow() {
         image: base64,
         description: description, // Enviando la descripción
         user_id: userId,
-        target: targetIds
+        targets: targetIds
       });
 
       alert("Imagen y descripción subidas con éxito");
