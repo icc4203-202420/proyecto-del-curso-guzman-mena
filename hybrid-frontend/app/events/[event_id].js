@@ -25,8 +25,8 @@ export default function EventShow() {
   const [error, setError] = useState(null);
   const [imageUri, setImageUri] = useState(null);
   const [description, setDescription] = useState('');
-  const [attendances, setAttendances] = useState({});
-  const [userAttendanceStatus, setUserAttendanceStatus] = useState({});
+  const [attendances, setAttendances] = useState({});                   // en esta trabajo
+  const [userAttendanceStatus, setUserAttendanceStatus] = useState({}); // en esta trabajo
   const [searchHandle, setSearchHandle] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [targetList, setTargetList] = useState([]);
@@ -59,47 +59,50 @@ export default function EventShow() {
   }, [event_id]);
 
 
-
-  const fetchAttendances = async () => {
+  
+  const fetchAttendances = async (eventId) => {
     try {
-      const response = await axios.get(`${apiUrl}/api/v1/events/${event_id}/attendances`);
-      setAttendances(response.data.attendees || []);  // Guardar los asistentes del evento
+      const response = await axios.get(`${apiUrl}/api/v1/events/${eventId}/attendances`);
+      setAttendances((prevAttendances) => ({
+        ...prevAttendances,
+        [eventId]: response.data.attendees || [],
+      }));
+  
       if (userId) {
         const userAttendance = response.data.attendees.some(
           (attendance) => attendance.user_id.toString() === userId.toString()
         );
-        setUserAttendanceStatus(userAttendance);  // Estado de asistencia del usuario
+        setUserAttendanceStatus((prevStatus) => ({
+          ...prevStatus,
+          [eventId]: userAttendance,
+        }));
       }
     } catch (error) {
-      console.error('Error al cargar asistentes del evento:', error);
+      console.error(`Error al cargar asistentes del evento ${eventId}:`, error);
     }
   };
 
-  useEffect(() => {
-    fetchAttendances();  // Llamar solo para el evento actual
-  }, [event_id]);  // Dependencia en `event_id` para actualizar cuando cambie
 
-
-  const handleAttendance = async () => {
+  const handleAttendance = async (eventId) => {
     if (!userId) {
       Alert.alert('Error', 'Debes iniciar sesión para confirmar asistencia.');
       return;
     }
   
-    const isAttending = userAttendanceStatus;
+    const isAttending = userAttendanceStatus[eventId];
   
     try {
       if (isAttending) {
-        // Eliminar asistencia
-        await axios.delete(`${apiUrl}/api/v1/events/${event_id}/attendances/${userId}`);
+        await axios.delete(`${apiUrl}api/v1/events/${eventId}/attendances/${userId}`);
       } else {
-        // Confirmar asistencia
-        await axios.post(`${apiUrl}/api/v1/events/${event_id}/attendances`, { user_id: userId });
+        await axios.post(`${apiUrl}/api/v1/events/${eventId}/attendances`, { user_id: userId });
       }
-  
-      // Actualizar estado
-      setUserAttendanceStatus(!isAttending);
-      fetchAttendances();  // Volver a cargar los asistentes
+      
+      setUserAttendanceStatus((prevStatus) => ({
+        ...prevStatus,
+        [eventId]: !isAttending,
+      }));
+      fetchAttendances(eventId);
     } catch (error) {
       console.error('Error al cambiar el estado de asistencia:', error);
     }
@@ -364,13 +367,13 @@ export default function EventShow() {
       <View style={styles.imageSection}>
       <Text>¿¿Te esperamos??</Text>
       {/* Botón para confirmar/desconfirmar asistencia */}
-      <Button
-        mode="contained"
-        onPress={handleAttendance}
-        style={styles.button}
-      >
-        {userAttendanceStatus ? 'Desconfirmar Asistencia' : 'Confirmar Asistencia'}
+      <Button 
+        mode="contained" 
+        onPress={() => handleAttendance(event.id)} 
+        style={styles.button}>
+        {userAttendanceStatus[event.id] ? 'Desconfirmar Asistencia' : 'Confirmar Asistencia'}
       </Button>
+
     </View>
 
     </ScrollView>
