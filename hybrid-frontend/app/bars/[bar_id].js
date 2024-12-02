@@ -9,26 +9,12 @@ import { getItem } from "../../util/Storage";
 export default function BarsShow() {
   const { bar_id } = useLocalSearchParams();
   const router = useRouter();
-  const [userId, setUserId] = useState(null); 
   const [bar, setBar] = useState(null);
   const [events, setEvents] = useState([]); 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [attendances, setAttendances] = useState({});
-  const [userAttendanceStatus, setUserAttendanceStatus] = useState({});
   const apiUrl = REACT_APP_API_URL;
   
-  useEffect(() => {
-    const fetchUserId = async () => {
-      try {
-        const storedUserId = await getItem('userId');
-        setUserId(storedUserId);
-      } catch (e) {
-        console.error('Error al obtener el ID de usuario:', e);
-      }
-    };
-    fetchUserId();
-  }, []);
 
   useEffect(() => {
     const fetchBarDetails = async () => {
@@ -46,59 +32,11 @@ export default function BarsShow() {
     fetchBarDetails();
   }, [bar_id]);
   
-
-  const fetchAttendances = async (eventId) => {
-    try {
-      const response = await axios.get(`${apiUrl}/api/v1/events/${eventId}/attendances`);
-      setAttendances((prevAttendances) => ({
-        ...prevAttendances,
-        [eventId]: response.data.attendees || [],
-      }));
-
-      if (userId) {
-        const userAttendance = response.data.attendees.some(
-          (attendance) => attendance.user_id.toString() === userId.toString()
-        );
-        setUserAttendanceStatus((prevStatus) => ({
-          ...prevStatus,
-          [eventId]: userAttendance,
-        }));
-      }
-    } catch (error) {
-      console.error(`Error al cargar asistentes del evento ${eventId}:`, error);
-    }
-  };
-
   useEffect(() => {
     events.forEach((event) => {
-      fetchAttendances(event.id);
     });
   }, [events]);
 
-  const handleAttendance = async (eventId) => {
-    if (!userId) {
-      Alert.alert('Error', 'Debes iniciar sesión para confirmar asistencia.');
-      return;
-    }
-
-    const isAttending = userAttendanceStatus[eventId];
-
-    try {
-      if (isAttending) {
-        await axios.delete(`${apiUrl}api/v1/events/${eventId}/attendances/${userId}`);
-      } else {
-        await axios.post(`${apiUrl}/api/v1/events/${eventId}/attendances`, { user_id: userId });
-      }
-      
-      setUserAttendanceStatus((prevStatus) => ({
-        ...prevStatus,
-        [eventId]: !isAttending,
-      }));
-      fetchAttendances(eventId);
-    } catch (error) {
-      console.error('Error al cambiar el estado de asistencia:', error);
-    }
-  };
 
   if (loading) {
     return (
@@ -142,19 +80,13 @@ export default function BarsShow() {
                   <Text>Description: {event.description}</Text>
                   <Text>Date: {event.date}</Text>
 
-                  <Button 
-                    mode="contained" 
-                    onPress={() => handleAttendance(event.id)} 
-                    style={styles.button}>
-                    {userAttendanceStatus[event.id] ? 'Desconfirmar Asistencia' : 'Confirmar Asistencia'}
-                  </Button>
 
                   {/* Botón para redirigir a la vista de creación de publicaciones */}
                   <Button 
                     mode="contained" 
-                    onPress={() => router.push(`/bars/CreatePost`)} 
+                    onPress={() => router.push(`/events/${event.id}`)} 
                     style={styles.button}>
-                    Subir Publicación
+                    Ir a Evento
                   </Button>
                 </Card>
               ))
