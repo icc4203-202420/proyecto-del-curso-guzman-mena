@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, ActivityIndicator, Image, ScrollView, TextInput, FlatList } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, Image, ScrollView, TextInput, FlatList, Alert } from 'react-native';
 import { Card, Title, Paragraph, Button } from 'react-native-paper';
 import { useLocalSearchParams } from 'expo-router';
 import { saveItem, getItem, deleteItem } from "../../util/Storage";
@@ -40,8 +40,7 @@ export default function EventShow() {
     };
     fetchUserId();
   }, []);
-
-
+  
 
   useEffect(() => {
     const fetchEvent = async () => {
