@@ -258,11 +258,9 @@ export default function EventShow() {
       {loading ? (
         <Text>Cargando...</Text> // Mostrar mensaje de carga
       ) : (
-        <FlatList
-          data={images}
-          keyExtractor={(item, index) => index.toString()}
-          renderItem={({ item }) => (
-            <View style={styles.cardContainer}>
+        <ScrollView style={styles.container}>
+          {images.map((item, index) => (
+            <View key={index} style={styles.cardContainer}>
               {/* Mostrar la imagen */}
               <Image 
                 source={{ uri: `${apiUrl}${item.path}` }}
@@ -280,15 +278,18 @@ export default function EventShow() {
                 horizontal={true}
                 contentContainerStyle={styles.targetContainer} // Aquí se aplica justifyContent
               >
-                {item.targets.map((target, index) => (
-                  <View key={index} style={styles.targetCard}>
-                    <Text style={styles.targetText}>{target.user_name}</Text>
-                  </View>
-                ))}
+                <View>
+                  {item.targets.map((target, targetIndex) => (
+                    <View key={targetIndex} style={styles.targetCard}>
+                      <Text style={styles.targetText}>{target.user_name}</Text>
+                    </View>
+                  ))}
+                </View>
               </ScrollView>
             </View>
-          )}
-        />
+          ))}
+        </ScrollView>
+
       )}
     </View>
 
@@ -337,6 +338,7 @@ export default function EventShow() {
           onChangeText={setSearchHandle}
         />
         <ScrollView>
+        <View>
           {searchResults.length > 0 ? (
             searchResults.map((result) => (
               <View key={result.id} style={styles.friendCard}>
@@ -350,6 +352,7 @@ export default function EventShow() {
             ) : (
               <Text>No se encontraron resultados.</Text>
             )}
+          </View>
           </ScrollView>
           {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
@@ -374,7 +377,7 @@ export default function EventShow() {
       </Button>
 
     </View>
-
+  
     </ScrollView>
   );
 }
